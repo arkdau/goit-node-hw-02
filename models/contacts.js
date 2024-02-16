@@ -113,7 +113,47 @@ const addContact = async (body) => {
   }
 };
 
-const updateContact = async (contactId, body) => {};
+const updateContact = async (contactId, body) => {
+  try {
+    const data = await fs.readFile(contactsPath, "utf8");
+    const parseData = await JSON.parse(data);
+    let mergedContact = null;
+
+    const newContacts = parseData.filter((element) => {
+      if (element.id !== contactId) {
+        return element;
+      } else {
+        mergedContact = Object.assign(element, body);
+        return mergedContact;
+      }
+    });
+
+    // parseData = [...parseData, newContacts];
+
+    // console.table(parseData);
+    if (mergedContact !== null) {
+      const controller = new AbortController();
+      const { signal } = controller;
+      const promise = fs.writeFile(
+        contactsPath,
+        JSON.stringify(newContacts, null, 2),
+        { signal },
+      );
+
+      await promise;
+    }
+
+    return mergedContact;
+
+    // _writeFile(
+    //   contactsPath,
+    //   parseData,
+    // );
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
 
 module.exports = {
   listContacts,

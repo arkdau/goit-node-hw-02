@@ -1,5 +1,11 @@
 const express = require("express");
-const { listContacts, getContactById, addContact, removeContact } = require(
+const {
+  listContacts,
+  getContactById,
+  addContact,
+  removeContact,
+  updateContact,
+} = require(
   "../../models/contacts",
 );
 const { nanoid } = require("nanoid");
@@ -88,7 +94,41 @@ router.delete("/:contactId", async (req, res, next) => {
 });
 
 router.put("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  const contactTemp = {
+    name: "",
+    email: "",
+    phone: "",
+  };
+  Object.assign(contactTemp, req.body);
+  const { name, email, phone } = contactTemp;
+  // res.json({ message: "template message" });
+  const id = req.params.contactId;
+  const body = req.body;
+  if (!name && !email && !phone) {
+    res.status(400).send({
+      status: "failure",
+      code: 400,
+      message: "missing fields",
+    });
+  } else {
+    // tasks.push(newTask);
+
+    const contact = await updateContact(id, body);
+
+    if (contact === null) {
+      res.status(404).send({
+        status: "failure",
+        code: 404,
+        message: "Not found",
+      });
+    } else {
+      res.status(200).send({
+        status: "success",
+        code: 200,
+        data: contact,
+      });
+    }
+  }
 });
 
 module.exports = router;
