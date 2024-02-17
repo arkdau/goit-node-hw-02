@@ -52,9 +52,9 @@ router.post("/", async (req, res) => {
   const data = req.body;
 
   const schema = Joi.object().keys({
-    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i),
+    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i).required(),
     email: Joi.string().email().required(),
-    phone: Joi.string().regex( /^\(\d{3}\) \d{3}-\d{4}$/).required(),
+    phone: Joi.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/).required(),
   });
 
   try {
@@ -98,26 +98,31 @@ router.delete("/:contactId", async (req, res, next) => {
 });
 
 router.put("/:contactId", async (req, res, next) => {
-  const contactTemp = {
-    name: "",
-    email: "",
-    phone: "",
-  };
-  Object.assign(contactTemp, req.body);
-  const { name, email, phone } = contactTemp;
-  // res.json({ message: "template message" });
-  const id = req.params.contactId;
-  const body = req.body;
-  if (!name && !email && !phone) {
-    res.status(400).send({
-      status: "failure",
-      code: 400,
-      message: "missing fields",
-    });
-  } else {
-    // tasks.push(newTask);
+  const data = req.body;
 
-    const contact = await updateContact(id, body);
+  const schema = Joi.object().keys({
+    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i),
+    email: Joi.string().email(),
+    phone: Joi.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/),
+  })
+    .or("name", "email", "phone");
+
+  try {
+    const value = await schema.validateAsync(data);
+
+    const id = req.params.contactId;
+    // const newBody = Object.assign(id, value);
+
+    // const contact = await addContact(newBody);
+
+    // res.status(201).send({
+    //   status: "success",
+    //   code: 201,
+    //   data: contact,
+    // });
+    // -------------------------------------------
+
+    const contact = await updateContact(id, value);
 
     if (contact === null) {
       res.status(404).send({
@@ -132,7 +137,50 @@ router.put("/:contactId", async (req, res, next) => {
         data: contact,
       });
     }
+  } catch (err) {
+    res.status(400).json({
+      status: "error",
+      code: 422,
+      message: "missing fields",
+      error: err,
+    });
   }
+
+  // const contactTemp = {
+  //   name: "",
+  //   email: "",
+  //   phone: "",
+  // };
+  // Object.assign(contactTemp, req.body);
+  // const { name, email, phone } = contactTemp;
+  // // res.json({ message: "template message" });
+  // const id = req.params.contactId;
+  // const body = req.body;
+  // if (!name && !email && !phone) {
+  //   res.status(400).send({
+  //     status: "failure",
+  //     code: 400,
+  //     message: "missing fields",
+  //   });
+  // } else {
+  //   // tasks.push(newTask);
+  //
+  //   const contact = await updateContact(id, body);
+  //
+  //   if (contact === null) {
+  //     res.status(404).send({
+  //       status: "failure",
+  //       code: 404,
+  //       message: "Not found",
+  //     });
+  //   } else {
+  //     res.status(200).send({
+  //       status: "success",
+  //       code: 200,
+  //       data: contact,
+  //     });
+  //   }
+  // }
 });
 
 module.exports = router;
