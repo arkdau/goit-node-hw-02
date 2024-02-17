@@ -1,4 +1,5 @@
 const express = require("express");
+const Joi = require("joi");
 const {
   listContacts,
   getContactById,
@@ -48,28 +49,31 @@ router.get("/:contactId", async (req, res, next) => {
 });
 
 router.post("/", async (req, res) => {
-  const { name, email, phone } = req.body;
+  const data = req.body;
 
-  if (!name || !email || !phone) {
-    res.status(400).send({
-      status: "failure",
-      code: 400,
-      message: "missing required name - field",
-    });
-  } else {
-    const newBody = {
-      id: nanoid(),
-      name,
-      email,
-      phone,
-    };
-    // tasks.push(newTask);
+  const schema = Joi.object().keys({
+    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i),
+    email: Joi.string().email().required(),
+    phone: Joi.string().regex( /^\(\d{3}\) \d{3}-\d{4}$/).required(),
+  });
+
+  try {
+    const value = await schema.validateAsync(data);
+    const newBody = Object.assign({ id: nanoid() }, value);
+
     const contact = await addContact(newBody);
 
     res.status(201).send({
       status: "success",
       code: 201,
       data: contact,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "error",
+      code: 422,
+      message: "missing required name - field",
+      error: err,
     });
   }
 });
