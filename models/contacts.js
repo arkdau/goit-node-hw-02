@@ -1,10 +1,11 @@
+/* eslint-env browser */
+/* eslint no-undef: "error" */
+
 const fs = require("node:fs/promises");
 const path = require("path");
 
-// const baseDir = path.dirname("./models/contacts.json");
-// const outFileName = path.basename("/");
-// const contactsPath = path.join(baseDir, outFileName);
-const contactsPath = "./models/contacts.json";
+const baseDir = path.dirname(__dirname);
+const contactsPath = path.join(baseDir,"/models/contacts.json");
 
 const listContacts = async () => {
   try {
@@ -15,11 +16,6 @@ const listContacts = async () => {
   } catch (error) {
     console.log(error);
   }
-
-  // const test = {
-  //   text: "func: listContacts"
-  // }
-  // return test;
 };
 
 const getContactById = async (contactId) => {
@@ -33,7 +29,6 @@ const getContactById = async (contactId) => {
     if (contact !== undefined) {
       return contact;
     } else {
-      // console.log("the specified id value does not exist");
       return null;
     }
   } catch (error) {
@@ -48,19 +43,9 @@ const removeContact = async (contactId) => {
     let delContact = null;
 
     const newContacts = parseData.filter((element) => {
-      if (element.id !== contactId) {
-        return element;
-      } else {
-        delContact = element;
-      }
+      delContact = element.id === contactId ? element : null;
+      return element.id !== contactId;
     });
-
-    // console.table(newContacts);
-
-    // _writeFile(
-    //   contactsPath,
-    //   newContacts,
-    // );
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -79,18 +64,11 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
   const newContacts = body;
-  // const newContacts = {
-  //   "id": `${nanoid()}`,
-  //   "name": name,
-  //   "email": email,
-  //   "phone": phone,
-  // };
+
   try {
     const data = await fs.readFile(contactsPath, "utf8");
     let parseData = await JSON.parse(data);
     parseData = [...parseData, newContacts];
-
-    // console.table(parseData);
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -103,10 +81,6 @@ const addContact = async (body) => {
     await promise;
 
     return body;
-    // _writeFile(
-    //   contactsPath,
-    //   parseData,
-    // );
   } catch (err) {
     console.error(err);
     return null;
@@ -128,9 +102,6 @@ const updateContact = async (contactId, body) => {
       }
     });
 
-    // parseData = [...parseData, newContacts];
-
-    // console.table(parseData);
     if (mergedContact !== null) {
       const controller = new AbortController();
       const { signal } = controller;
@@ -144,11 +115,6 @@ const updateContact = async (contactId, body) => {
     }
 
     return mergedContact;
-
-    // _writeFile(
-    //   contactsPath,
-    //   parseData,
-    // );
   } catch (err) {
     console.error(err);
     return null;
