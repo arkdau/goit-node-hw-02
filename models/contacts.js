@@ -12,7 +12,6 @@ const listContacts = async () => {
     const data = await fs.readFile(contactsPath, "utf8");
     const parseData = await JSON.parse(data);
     return parseData;
-    // console.table(parseData);
   } catch (error) {
     console.log(error);
   }
@@ -90,10 +89,10 @@ const addContact = async (body) => {
 const updateContact = async (contactId, body) => {
   try {
     const data = await fs.readFile(contactsPath, "utf8");
-    const parseData = await JSON.parse(data);
+    const parsedData = await JSON.parse(data);
     let mergedContact = null;
 
-    const newContacts = parseData.filter((element) => {
+    const newContacts = parsedData.filter((element) => {
       if (element.id !== contactId) {
         return element;
       } else {

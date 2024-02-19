@@ -1,5 +1,4 @@
 const express = require("express");
-const Joi = require("joi");
 const {
   listContacts,
   getContactById,
@@ -9,7 +8,9 @@ const {
 } = require(
   "../../models/contacts",
 );
+
 const { nanoid } = require("nanoid");
+const { postDataSchema, putDataschema } = require("./validation");
 
 const router = express.Router();
 
@@ -51,14 +52,8 @@ router.get("/:contactId", async (req, res, next) => {
 router.post("/", async (req, res) => {
   const data = req.body;
 
-  const schema = Joi.object().keys({
-    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i).required(),
-    email: Joi.string().email().required(),
-    phone: Joi.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/).required(),
-  });
-
   try {
-    const value = await schema.validateAsync(data);
+    const value = await postDataSchema.validateAsync(data);
     const newBody = Object.assign({ id: nanoid() }, value);
 
     const contact = await addContact(newBody);
@@ -79,7 +74,6 @@ router.post("/", async (req, res) => {
 });
 
 router.delete("/:contactId", async (req, res, next) => {
-  // res.json({ message: "template message" });
   const id = req.params.contactId;
   const status = await removeContact(id);
   if (status === null) {
@@ -101,15 +95,8 @@ router.put("/:contactId", async (req, res, next) => {
   const data = req.body;
   const id = req.params.contactId;
 
-  const schema = Joi.object().keys({
-    name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i),
-    email: Joi.string().email(),
-    phone: Joi.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/),
-  })
-    .or("name", "email", "phone");
-
   try {
-    const value = await schema.validateAsync(data);
+    const value = await putDataschema.validateAsync(data);
     const contact = await updateContact(id, value);
 
     if (contact === null) {
