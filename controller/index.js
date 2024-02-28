@@ -56,31 +56,31 @@ const create = async (req, res, next) => {
   }
 }
 
-// const update = async (req, res, next) => {
-//   const { id } = req.params
-//   const { title, text } = req.body
-//   try {
-//     const result = await service.updateTask(id, { title, text })
-//     if (result) {
-//       res.json({
-//         status: 'success',
-//         code: 200,
-//         data: { task: result },
-//       })
-//     } else {
-//       res.status(404).json({
-//         status: 'error',
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: 'Not Found',
-//       })
-//     }
-//   } catch (e) {
-//     console.error(e)
-//     next(e)
-//   }
-// }
-//
+const update = async (req, res, next) => {
+  const { id } = req.params
+  const { name, email, phone, favorite } = req.body
+  try {
+    const result = await service.updateContact(id, { name, email, phone, favorite })
+    if (result) {
+      res.json({
+        status: 'success',
+        code: 200,
+        data: { contact: result },
+      })
+    } else {
+      res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: 'Not Found',
+      })
+    }
+  } catch (e) {
+    console.error(e)
+    next(e)
+  }
+}
+
 // const updateStatus = async (req, res, next) => {
 //   const { id } = req.params
 //   const { isDone = false } = req.body
@@ -136,7 +136,7 @@ module.exports = {
   get,
   getById,
   create,
-  // update,
+  update,
   // updateStatus,
   // remove,
 }

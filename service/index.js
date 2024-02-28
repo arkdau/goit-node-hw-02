@@ -13,11 +13,11 @@ const getContactById = (id) => {
 const createContact = ({ name, email, phone, favorite }) => {
   return Contacts.create({ name, email, phone, favorite })
 }
-//
-// const updateTask = (id, fields) => {
-//   return Task.findByIdAndUpdate({ _id: id }, fields, { new: true })
-// }
-//
+
+const updateContact = (id, fields) => {
+  return Contacts.findByIdAndUpdate({ _id: id }, fields, { new: true })
+}
+
 // const removeTask = (id) => {
 //   return Task.findByIdAndRemove({ _id: id })
 // }
@@ -26,7 +26,7 @@ module.exports = {
   getAllcontacts,
   getContactById,
   createContact,
-  // updateTask,
+  updateContact,
   // removeTask,
 }
 
