@@ -1,14 +1,14 @@
 // const User = require('./schemas/users')
-const Contact = require('./schemas/contacts')
+const Contacts = require('./schemas/contacts')
 
 const getAllcontacts = async () => {
   // return Task.find()
-     return Contact.find();
+     return Contacts.find();
 }
 
-// const getTaskById = (id) => {
-//   return Task.findOne({ _id: id })
-// }
+const getContactById = (id) => {
+  return Contacts.findOne({ _id: id })
+}
 //
 // const createTask = ({ title, text }) => {
 //   return Task.create({ title, text })
@@ -24,7 +24,7 @@ const getAllcontacts = async () => {
 
 module.exports = {
   getAllcontacts,
-  // getTaskById,
+  getContactById,
   // createTask,
   // updateTask,
   // removeTask,

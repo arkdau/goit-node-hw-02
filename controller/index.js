@@ -16,29 +16,29 @@ const get = async (req, res, next) => {
   }
 }
 
-// const getById = async (req, res, next) => {
-//   const { id } = req.params
-//   try {
-//     const result = await service.getTaskById(id)
-//     if (result) {
-//       res.json({
-//         status: 'success',
-//         code: 200,
-//         data: { task: result },
-//       })
-//     } else {
-//       res.status(404).json({
-//         status: 'error',
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: 'Not Found',
-//       })
-//     }
-//   } catch (e) {
-//     console.error(e)
-//     next(e)
-//   }
-// }
+const getById = async (req, res, next) => {
+  const { id } = req.params
+  try {
+    const result = await service.getContactById(id)
+    if (result) {
+      res.json({
+        status: 'success',
+        code: 200,
+        data: { contact: result },
+      })
+    } else {
+      res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: 'Not Found',
+      })
+    }
+  } catch (e) {
+    console.error(e)
+    next(e)
+  }
+}
 //
 // const create = async (req, res, next) => {
 //   const { title, text } = req.body
@@ -134,7 +134,7 @@ const get = async (req, res, next) => {
 
 module.exports = {
   get,
-  // getById,
+  getById,
   // create,
   // update,
   // updateStatus,
