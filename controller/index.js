@@ -39,23 +39,23 @@ const getById = async (req, res, next) => {
     next(e)
   }
 }
-//
-// const create = async (req, res, next) => {
-//   const { title, text } = req.body
-//   try {
-//     const result = await service.createTask({ title, text })
-//
-//     res.status(201).json({
-//       status: 'success',
-//       code: 201,
-//       data: { task: result },
-//     })
-//   } catch (e) {
-//     console.error(e)
-//     next(e)
-//   }
-// }
-//
+
+const create = async (req, res, next) => {
+  const { name, email, phone, favorite } = req.body
+  try {
+    const result = await service.createContact({ name, email, phone, favorite })
+
+    res.status(201).json({
+      status: 'success',
+      code: 201,
+      data: { contact: result },
+    })
+  } catch (e) {
+    console.error(e)
+    next(e)
+  }
+}
+
 // const update = async (req, res, next) => {
 //   const { id } = req.params
 //   const { title, text } = req.body
@@ -135,7 +135,7 @@ const getById = async (req, res, next) => {
 module.exports = {
   get,
   getById,
-  // create,
+  create,
   // update,
   // updateStatus,
   // remove,

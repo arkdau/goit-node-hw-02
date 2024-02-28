@@ -9,10 +9,10 @@ const getAllcontacts = async () => {
 const getContactById = (id) => {
   return Contacts.findOne({ _id: id })
 }
-//
-// const createTask = ({ title, text }) => {
-//   return Task.create({ title, text })
-// }
+
+const createContact = ({ name, email, phone, favorite }) => {
+  return Contacts.create({ name, email, phone, favorite })
+}
 //
 // const updateTask = (id, fields) => {
 //   return Task.findByIdAndUpdate({ _id: id }, fields, { new: true })
@@ -25,7 +25,7 @@ const getContactById = (id) => {
 module.exports = {
   getAllcontacts,
   getContactById,
-  // createTask,
+  createContact,
   // updateTask,
   // removeTask,
 }
