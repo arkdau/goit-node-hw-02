@@ -1,5 +1,5 @@
 const service = require("../service");
-const { postDataSchema, putDataschema } = require("./validation");
+const { postDataSchema, patchDataschema } = require("./validation");
 
 const get = async (req, res, next) => {
   try {
@@ -102,10 +102,13 @@ const update = async (req, res, next) => {
 
 const updateName = async (req, res, next) => {
   const { id } = req.params;
-  const { name = "" } = req.body;
+  // const { name = "" } = req.body;
+  const data = req.body;
 
   try {
-    const result = await service.updateContact(id, { name });
+    const value = await patchDataschema.validateAsync(data);
+    // const result = await service.updateContact(id, { name });
+    const result = await service.updateContact(id, value);
     if (result) {
       res.json({
         status: "success",
@@ -128,10 +131,13 @@ const updateName = async (req, res, next) => {
 
 const updateEmail = async (req, res, next) => {
   const { id } = req.params;
-  const { email = "" } = req.body;
+  // const { email = "" } = req.body;
+  const data = req.body;
 
   try {
-    const result = await service.updateContact(id, { email });
+    const value = await patchDataschema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+    // const result = await service.updateContact(id, { email });
     if (result) {
       res.json({
         status: "success",
@@ -154,10 +160,13 @@ const updateEmail = async (req, res, next) => {
 
 const updatePhone = async (req, res, next) => {
   const { id } = req.params;
-  const { phone = "" } = req.body;
+  // const { phone = "" } = req.body;
+  const data = req.body;
 
   try {
-    const result = await service.updateContact(id, { phone });
+    const value = await patchDataschema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+    // const result = await service.updateContact(id, { phone });
     if (result) {
       res.json({
         status: "success",
@@ -180,10 +189,13 @@ const updatePhone = async (req, res, next) => {
 
 const updateFavorite = async (req, res, next) => {
   const { id } = req.params;
-  const { favorite = "" } = req.body;
+  // const { favorite = "" } = req.body;
+  const data = req.body;
 
   try {
-    const result = await service.updateContact(id, { favorite });
+    const value = await patchDataschema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+    // const result = await service.updateContact(id, { favorite });
     if (result) {
       res.json({
         status: "success",
