@@ -68,14 +68,18 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const { id } = req.params;
-  const { name, email, phone, favorite } = req.body;
+  // const { name, email, phone, favorite } = req.body;
+  const data = req.body;
   try {
-    const result = await service.updateContact(id, {
-      name,
-      email,
-      phone,
-      favorite,
-    });
+    const value = await postDataSchema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+
+    // const result = await service.updateContact(id, {
+    //   name,
+    //   email,
+    //   phone,
+    //   favorite,
+    // });
     if (result) {
       res.json({
         status: "success",
