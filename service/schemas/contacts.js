@@ -43,5 +43,5 @@ const contact = new Schema({
 });
 
 // const User = model("user", contact);
-const User = model("contacts", contact);
-module.exports =  User 
+const Contact = model("contacts", contact);
+module.exports =  Contact 
