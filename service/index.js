@@ -1,8 +1,6 @@
-// const User = require('./schemas/users')
 const Contacts = require('./schemas/contacts')
 
 const getAllcontacts = async () => {
-  // return Task.find()
      return Contacts.find();
 }
 

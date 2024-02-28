@@ -16,6 +16,7 @@ db.then(() => {
   console.log("Database connection successful");
 }).catch((err) => {
   console.log(err);
+  process.exit(1);
 });
 
 const bodyParser = require("body-parser");
