@@ -22,7 +22,7 @@ const { Schema, model } = require("mongoose");
 // const User = model('user', user);
 // module.exports = {User}
 
-const user = new Schema({
+const contact = new Schema({
   name: {
     type: String,
     minlength: 2, // 10
@@ -42,5 +42,6 @@ const user = new Schema({
   },
 });
 
-const User = model("user", user);
+// const User = model("user", contact);
+const User = model("contacts", contact);
 module.exports =  User 
