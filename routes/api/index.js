@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const ctrlContacts = require('../../controller')
 
+
 router.get('/', ctrlContacts.get)
 
 router.get('/:id', ctrlContacts.getById)

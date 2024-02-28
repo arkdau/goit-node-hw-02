@@ -1,4 +1,5 @@
 const service = require("../service");
+const { postDataSchema, putDataschema } = require("./validation");
 
 const get = async (req, res, next) => {
   try {
@@ -41,14 +42,18 @@ const getById = async (req, res, next) => {
 };
 
 const create = async (req, res, next) => {
-  const { name, email, phone, favorite } = req.body;
+  const data = req.body;
+  // const { name, email, phone, favorite } = req.body;
   try {
-    const result = await service.createContact({
-      name,
-      email,
-      phone,
-      favorite,
-    });
+    const value = await postDataSchema.validateAsync(data);
+    const result = await service.createContact(value);
+
+    // const result = await service.createContact({
+    //   name,
+    //   email,
+    //   phone,
+    //   favorite,
+    // });
 
     res.status(201).json({
       status: "success",
@@ -196,29 +201,29 @@ const updateFavorite = async (req, res, next) => {
 };
 
 const remove = async (req, res, next) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   try {
-    const result = await service.removeContact(id)
+    const result = await service.removeContact(id);
     if (result) {
       res.json({
-        status: 'success',
+        status: "success",
         code: 200,
         data: { contact: result },
-      })
+      });
     } else {
       res.status(404).json({
-        status: 'error',
+        status: "error",
         code: 404,
         message: `Not found task id: ${id}`,
-        data: 'Not Found',
-      })
+        data: "Not Found",
+      });
     }
   } catch (e) {
-    console.error(e)
-    next(e)
+    console.error(e);
+    next(e);
   }
-}
+};
 
 module.exports = {
   get,
