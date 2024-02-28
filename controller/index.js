@@ -100,7 +100,7 @@ const update = async (req, res, next) => {
   }
 };
 
-const updateName = async (req, res, next) => {
+const patchData = async (req, res, next) => {
   const { id } = req.params;
   // const { name = "" } = req.body;
   const data = req.body;
@@ -129,92 +129,92 @@ const updateName = async (req, res, next) => {
   }
 };
 
-const updateEmail = async (req, res, next) => {
-  const { id } = req.params;
-  // const { email = "" } = req.body;
-  const data = req.body;
-
-  try {
-    const value = await patchDataschema.validateAsync(data);
-    const result = await service.updateContact(id, value);
-    // const result = await service.updateContact(id, { email });
-    if (result) {
-      res.json({
-        status: "success",
-        code: 200,
-        data: { conatact: result },
-      });
-    } else {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: `Not found task id: ${id}`,
-        data: "Not Found",
-      });
-    }
-  } catch (e) {
-    console.error(e);
-    next(e);
-  }
-};
-
-const updatePhone = async (req, res, next) => {
-  const { id } = req.params;
-  // const { phone = "" } = req.body;
-  const data = req.body;
-
-  try {
-    const value = await patchDataschema.validateAsync(data);
-    const result = await service.updateContact(id, value);
-    // const result = await service.updateContact(id, { phone });
-    if (result) {
-      res.json({
-        status: "success",
-        code: 200,
-        data: { conatact: result },
-      });
-    } else {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: `Not found task id: ${id}`,
-        data: "Not Found",
-      });
-    }
-  } catch (e) {
-    console.error(e);
-    next(e);
-  }
-};
-
-const updateFavorite = async (req, res, next) => {
-  const { id } = req.params;
-  // const { favorite = "" } = req.body;
-  const data = req.body;
-
-  try {
-    const value = await patchDataschema.validateAsync(data);
-    const result = await service.updateContact(id, value);
-    // const result = await service.updateContact(id, { favorite });
-    if (result) {
-      res.json({
-        status: "success",
-        code: 200,
-        data: { conatact: result },
-      });
-    } else {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: `Not found task id: ${id}`,
-        data: "Not Found",
-      });
-    }
-  } catch (e) {
-    console.error(e);
-    next(e);
-  }
-};
+// const updateEmail = async (req, res, next) => {
+//   const { id } = req.params;
+//   // const { email = "" } = req.body;
+//   const data = req.body;
+//
+//   try {
+//     const value = await patchDataschema.validateAsync(data);
+//     const result = await service.updateContact(id, value);
+//     // const result = await service.updateContact(id, { email });
+//     if (result) {
+//       res.json({
+//         status: "success",
+//         code: 200,
+//         data: { conatact: result },
+//       });
+//     } else {
+//       res.status(404).json({
+//         status: "error",
+//         code: 404,
+//         message: `Not found task id: ${id}`,
+//         data: "Not Found",
+//       });
+//     }
+//   } catch (e) {
+//     console.error(e);
+//     next(e);
+//   }
+// };
+//
+// const updatePhone = async (req, res, next) => {
+//   const { id } = req.params;
+//   // const { phone = "" } = req.body;
+//   const data = req.body;
+//
+//   try {
+//     const value = await patchDataschema.validateAsync(data);
+//     const result = await service.updateContact(id, value);
+//     // const result = await service.updateContact(id, { phone });
+//     if (result) {
+//       res.json({
+//         status: "success",
+//         code: 200,
+//         data: { conatact: result },
+//       });
+//     } else {
+//       res.status(404).json({
+//         status: "error",
+//         code: 404,
+//         message: `Not found task id: ${id}`,
+//         data: "Not Found",
+//       });
+//     }
+//   } catch (e) {
+//     console.error(e);
+//     next(e);
+//   }
+// };
+//
+// const updateFavorite = async (req, res, next) => {
+//   const { id } = req.params;
+//   // const { favorite = "" } = req.body;
+//   const data = req.body;
+//
+//   try {
+//     const value = await patchDataschema.validateAsync(data);
+//     const result = await service.updateContact(id, value);
+//     // const result = await service.updateContact(id, { favorite });
+//     if (result) {
+//       res.json({
+//         status: "success",
+//         code: 200,
+//         data: { conatact: result },
+//       });
+//     } else {
+//       res.status(404).json({
+//         status: "error",
+//         code: 404,
+//         message: `Not found task id: ${id}`,
+//         data: "Not Found",
+//       });
+//     }
+//   } catch (e) {
+//     console.error(e);
+//     next(e);
+//   }
+// };
 
 const remove = async (req, res, next) => {
   const { id } = req.params;
@@ -246,9 +246,9 @@ module.exports = {
   getById,
   create,
   update,
-  updateName,
-  updateEmail,
-  updatePhone,
-  updateFavorite,
+  patchData,
+  // updateEmail,
+  // updatePhone,
+  // updateFavorite,
   remove,
 };

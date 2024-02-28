@@ -11,13 +11,13 @@ router.post('/', ctrlContacts.create)
 
 router.put('/:id', ctrlContacts.update)
 
-router.patch('/:id/name', ctrlContacts.updateName)
+router.patch('/:id', ctrlContacts.patchData)
 
-router.patch('/:id/email', ctrlContacts.updateEmail)
-
-router.patch('/:id/phone', ctrlContacts.updatePhone)
-
-router.patch('/:id/favorite', ctrlContacts.updateFavorite)
+// router.patch('/:id/email', ctrlContacts.updateEmail)
+//
+// router.patch('/:id/phone', ctrlContacts.updatePhone)
+//
+// router.patch('/:id/favorite', ctrlContacts.updateFavorite)
 
 router.delete('/:id', ctrlContacts.remove)
 
