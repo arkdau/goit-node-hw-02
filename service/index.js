@@ -18,15 +18,15 @@ const updateContact = (id, fields) => {
   return Contacts.findByIdAndUpdate({ _id: id }, fields, { new: true })
 }
 
-// const removeTask = (id) => {
-//   return Task.findByIdAndRemove({ _id: id })
-// }
+const removeContact = (id) => {
+  return Contacts.deleteOne({ _id: id })
+}
 
 module.exports = {
   getAllcontacts,
   getContactById,
   createContact,
   updateContact,
-  // removeTask,
+  removeContact,
 }
 
