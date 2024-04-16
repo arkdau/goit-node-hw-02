@@ -3,6 +3,9 @@ const jsonwebtoken = require("jsonwebtoken");
 const service = require("../service");
 // const User = require("./../service/schemas/contacts");
 
+const cfg = require("./../cfg");
+// const User = require("./../service/schemas/contacts");
+
 const { postDataSchema, patchDataschema } = require("./validation");
 
 const get = async (req, res, next) => {
@@ -277,7 +280,7 @@ const remove = async (req, res, next) => {
 
 // //////////////////////////////////////////////////////////
 
-const cfg = require("./../cfg");
+// const cfg = require("./../cfg");
 
 function createJWT(payload) {
   const header = {
@@ -332,8 +335,11 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
   // const data = req.body;
   // Check if the email and password already exist
+
   if (email && password) {
     const user = await service.getContactByEmail(email);
+    // const validPassword = user.validPassword(password);
+
     if (user && user.validPassword(password)) {
       const payload = {
         id: user.id,
@@ -350,11 +356,17 @@ const login = async (req, res, next) => {
         message: "JWT created",
         data: jwt, // jwt2
       });
+    } else if (user === null) {
+      res.send({
+        status: "failure",
+        code: 401,
+        message: "User does not exist",
+      });
     } else {
       res.send({
         status: "failure",
-        code: 400,
-        message: "User does not exist",
+        code: 401,
+        message: "bad password",
       });
     }
   } else {
@@ -364,7 +376,57 @@ const login = async (req, res, next) => {
       message: "Bad Request",
     });
   }
-  // end Check
+};
+
+
+const jwtAuth = async (req, res, next) => {
+  const auth = req.headers.authorization; // Bearer token
+  if (auth) {
+    const token = auth.split(" ")[1];
+    try {
+      // const jwt = token.verify(token, cfg.JWT_SECRET);
+      const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
+      // const user = await User.findOne({
+      //   _id: payload.id,
+      // })
+      const user = await service.getContactById({
+        _id: payload.id,
+      });
+
+      // const user = users.find((user) => user.id === payload.id);
+      if (user) {
+        req.user = user;
+        next();
+      } else {
+        res.send({
+          status: "failure",
+          code: 401,
+          message: "No user",
+        });
+      }
+    } catch (err) {
+      res.send({
+        status: "failure",
+        code: 401,
+        message: "Wrong token",
+      });
+    }
+  } else {
+    res.send({
+      status: "failure",
+      code: 401,
+      message: "Not authorized",
+    });
+  }
+};
+
+const current = (req, res) => {
+  res.send({
+    status: "success",
+    code: 200,
+    data: { id: req.user.id, email: req.user.email }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
+    message: "User list",
+  });
 };
 
 module.exports = {
@@ -376,4 +438,6 @@ module.exports = {
   remove,
   // register,
   login,
+  jwtAuth,
+  current,
 };
