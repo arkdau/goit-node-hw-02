@@ -8,8 +8,16 @@ const getContactById = (id) => {
   return Contacts.findOne({ _id: id })
 }
 
-const createContact = ({ name, email, phone, favorite }) => {
-  return Contacts.create({ name, email, phone, favorite })
+const createContact = async  ({ password, email, subscription, token, owner }) => {
+  // return Contacts.create({ password, email, subscription, token, owner })
+
+  // const newUser =  Contacts.create({ password, email, subscription, token, owner })
+
+  const newUser = new Contacts({ password, email, subscription, token, owner }
+);
+  newUser.setPassword(password);
+  await newUser.save();
+  return newUser;
 }
 
 const updateContact = (id, fields) => {
@@ -20,11 +28,17 @@ const removeContact = (id) => {
   return Contacts.deleteOne({ _id: id })
 }
 
+const getContactByEmail = (email) => {
+  return Contacts.findOne({ email: email })
+}
+
+
 module.exports = {
   getAllcontacts,
   getContactById,
   createContact,
   updateContact,
   removeContact,
+  getContactByEmail,
 }
 
