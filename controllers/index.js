@@ -424,7 +424,7 @@ const current = (req, res) => {
   res.send({
     status: "success",
     code: 200,
-    data: { id: req.user.id, email: req.user.email }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
+    data: { id: req.user.id, email: req.user.email, subscription: req.user.subscription }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
     message: "User list",
   });
 };
