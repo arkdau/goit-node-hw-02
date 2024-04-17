@@ -49,6 +49,17 @@ const contact = new Schema({
   },
 });
 
+
+
+
+
+
+
+
+
+
+
+
 // const Contacts = model("contacts", contact);
 // module.exports = Contacts;
 
@@ -60,7 +71,14 @@ contact.methods.validPassword = function (password) {
   return bCrypt.compareSync(password, this.password);
 };
 
+// delete token
+contact.methods.deleteToken = function (token, cb) {
+  const user = this;
 
-
+  user.update({ $unset: { token: 1 } }, function (err, user) {
+    if (err) return cb(err);
+    cb(null, user);
+  });
+};
 
 module.exports = mongoose.model("User", contact);

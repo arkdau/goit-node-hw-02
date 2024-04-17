@@ -14,12 +14,13 @@ const postDataSchema = Joi.object().keys({
 });
 
 const patchDataschema = Joi.object().keys({
-  name: Joi.string().regex(/^[A-Z]+ [A-Z]+$/i),
+  id: Joi.string(),
+  password: Joi.string(),
   email: Joi.string().email(),
-  phone: Joi.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/),
-  favorite: Joi.bool(),
+  subscription: Joi.string().equal("starter", "pro", "business"),
+  token: Joi.string(),
 })
-  .or("name", "email", "phone", "favorite");
+  .or("password", "email", "subscription", "token");
 
 module.exports = {
   postDataSchema,

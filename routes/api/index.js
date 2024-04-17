@@ -19,6 +19,7 @@ router.delete("/:id", ctrlContacts.remove);
 
 router.post("/signup", ctrlContacts.create);
 router.post("/login", ctrlContacts.login);
+router.get("/logout", ctrlContacts.jwtAuth, ctrlContacts.logout);
 router.get("/current", ctrlContacts.jwtAuth, ctrlContacts.current);
 
 module.exports = router;

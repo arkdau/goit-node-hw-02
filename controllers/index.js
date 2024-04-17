@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const jsonwebtoken = require("jsonwebtoken");
 const service = require("../service");
+const Blacklist = require("../service/schemas/blacklist");
 // const User = require("./../service/schemas/contacts");
 
 const cfg = require("./../cfg");
@@ -348,6 +349,22 @@ const login = async (req, res, next) => {
       const jwt = createJWT(payload);
       // external lib jsonwebtoken
       const jwt2 = jsonwebtoken.sign(payload, cfg.JWT_SECRET);
+      // const data = {token: jwt};
+      // if (jwt) {
+      //
+      //   service.updateContact(user.id, data);
+      // }
+      // console.log("user: ", user);
+
+
+      const options = {
+            maxAge: 20 * 60 * 1000, // would expire in 20minutes
+            httpOnly: true, // The cookie is only accessible by the web server
+            secure: true,
+            sameSite: "None",
+        };
+      // res.cookie("SessionID", jwt, options);
+      res.cookie("SessionID", jwt, options); // set the token to response header, so that the client sends it back on each subsequent request
       console.log("jwt: ", jwt);
       console.log("jwt2: ", jwt2);
       res.send({
@@ -355,6 +372,10 @@ const login = async (req, res, next) => {
         code: 200,
         message: "JWT created",
         data: jwt, // jwt2
+        user: {
+          email: email,
+          subscription: user.subscription,
+        },
       });
     } else if (user === null) {
       res.send({
@@ -378,54 +399,203 @@ const login = async (req, res, next) => {
   }
 };
 
+// const logout = async (req, res, next) => {
+//   const { id } req.user;
+//   // const data = req.user;
+//   // data.token = null;
+//
+// // "_id" : ObjectId("661ef5f5cf53cf2c87df3974"),
+// //     "password" : "$2a$06$HAFJTJcxP4M2P/eMPe.ZO.8AglIOwCycHQNPA9exN8OQn1Wg.q.yq",
+// //     "email" : "alicjatricity1978@wp.pl",
+// //     "subscription" : "starter",
+// //     "token" : null,
+//
+//
+//
+//
+//   const data = {
+//   // id: req.user.id,
+//   // password: req.user.password,
+//   // email: req.user.email,
+//   // subscription: req.user.subscription,
+//   token: null,
+// }
+//
+//
+//   try {
+//     // const value = await patchDataschema.validateAsync(data);
+//     const result = await service.updateContact(id, data);
+//     if (result) {
+//       res.json({
+//         status: "success",
+//         code: 204,
+//       });
+//     } else {
+//       res.status(404).json({
+//         status: "error",
+//         code: 404,
+//         message: `Not found task id: ${id}`,
+//         data: "Not Found",
+//       });
+//     }
+//   } catch (e) {
+//     console.error(e);
+//     next(e);
+//   }
+// };
 
-const jwtAuth = async (req, res, next) => {
-  const auth = req.headers.authorization; // Bearer token
-  if (auth) {
-    const token = auth.split(" ")[1];
-    try {
-      // const jwt = token.verify(token, cfg.JWT_SECRET);
-      const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
-      // const user = await User.findOne({
-      //   _id: payload.id,
-      // })
-      const user = await service.getContactById({
-        _id: payload.id,
-      });
+// req.user.deleteToken(req.token,(err,user)=>{
+//            if(err) return res.status(400).send(err);
+//            res.sendStatus(200);
 
-      // const user = users.find((user) => user.id === payload.id);
-      if (user) {
-        req.user = user;
-        next();
-      } else {
-        res.send({
-          status: "failure",
-          code: 401,
-          message: "No user",
-        });
-      }
-    } catch (err) {
-      res.send({
-        status: "failure",
-        code: 401,
-        message: "Wrong token",
-      });
-    }
-  } else {
-    res.send({
-      status: "failure",
-      code: 401,
-      message: "Not authorized",
+// const logout = async (req, res, next) => {
+//   // req.user.deleteToken(req.token, (err, user) => {
+//   //   if (err) return res.status(400).send(err);
+//   //   res.sendStatus(200);
+//   // });
+//   console.log("token ", req.token);
+// };
+
+const logout = async (req, res) => {
+  try {
+    const authHeader = req.headers.cookie; // get the session cookie from request header
+    if (!authHeader) return res.sendStatus(204); // No content
+    const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
+    const accessToken = cookie.split(";")[0];
+    const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+    // if true, send a no content response.
+    if (checkIfBlacklisted) return res.sendStatus(204);
+    // otherwise blacklist token
+    const newBlacklist = new Blacklist({
+      token: accessToken,
+    });
+    await newBlacklist.save();
+    // Also clear request cookie on client
+    res.setHeader("Clear-Site-Data", '"cookies"');
+    res.status(200).json({ message: "You are logged out!" });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
     });
   }
+  res.end();
 };
+
+// verify
+const jwtAuth = async (req, res, next) => {
+  const authHeader = req.headers.cookie; // get the session cookie from request header
+
+  if (!authHeader) return res.sendStatus(401); // if there is no cookie from request header, send an unauthorized response.
+  const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
+  const accessToken = cookie.split(";")[0];
+  const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+  // if true, send an unathorized message, asking for a re-authentication.
+  if (checkIfBlacklisted) {
+    return res
+      .status(401)
+      .json({ message: "This session has expired. Please login" });
+  }
+  // if token has not been blacklisted, verify with jwt to see if it has been tampered with or not.
+  // that's like checking the integrity of the accessToken
+  jsonwebtoken.verify(accessToken, cfg.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      // if token has been altered, return a forbidden error
+      return res
+        .status(401)
+        .json({ message: "This session has expired. Please login" });
+    }
+
+    const { id } = decoded; // get user id from the decoded token
+    // const user = await User.findById(id); // find user by that `id`
+    const user = await service.getContactById({
+      _id: id,
+    });
+    const { password, ...data } = user._doc; // return user object but the password
+    req.user = data; // put the data object into req.user
+    next();
+  });
+};
+
+// export async function Logout(req, res) {
+//   try {
+//     const authHeader = req.headers['cookie']; // get the session cookie from request header
+//     if (!authHeader) return res.sendStatus(204); // No content
+//     const cookie = authHeader.split('=')[1]; // If there is, split the cookie string to get the actual jwt token
+//     const accessToken = cookie.split(';')[0];
+//     const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+//     // if true, send a no content response.
+//     if (checkIfBlacklisted) return res.sendStatus(204);
+//     // otherwise blacklist token
+//     const newBlacklist = new Blacklist({
+//       token: accessToken,
+//     });
+//     await newBlacklist.save();
+//     // Also clear request cookie on client
+//     res.setHeader('Clear-Site-Data', '"cookies"');
+//     res.status(200).json({ message: 'You are logged out!' });
+//   } catch (err) {
+//     res.status(500).json({
+//       status: 'error',
+//       message: 'Internal Server Error',
+//     });
+//   }
+//   res.end();
+// }
+
+// const jwtAuth = async (req, res, next) => {
+//   const auth = req.headers.authorization; // Bearer token
+//   if (auth) {
+//     const token = auth.split(" ")[1];
+//     try {
+//       // const jwt = token.verify(token, cfg.JWT_SECRET);
+//       const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
+//       // const user = await User.findOne({
+//       //   _id: payload.id,
+//       // })
+//       const user = await service.getContactById({
+//         _id: payload.id,
+//       });
+//
+//       // const user = users.find((user) => user.id === payload.id);
+//       if (user) {
+//         req.user = user;
+//         next();
+//       } else {
+//         res.send({
+//           status: "failure",
+//           code: 401,
+//           message: "No user",
+//         });
+//       }
+//     } catch (err) {
+//       res.send({
+//         status: "failure",
+//         code: 401,
+//         message: "Wrong token",
+//       });
+//     }
+//   } else {
+//     res.send({
+//       status: "failure",
+//       code: 401,
+//       message: "Not authorized",
+//     });
+//   }
+// };
 
 const current = (req, res) => {
   res.send({
     status: "success",
     code: 200,
-    data: { id: req.user.id, email: req.user.email, subscription: req.user.subscription }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
-    message: "User list",
+    data: {
+      id: req.user.id,
+      password: req.user.password,
+      email: req.user.email,
+      subscription: req.user.subscription,
+      token: req.user.token,
+    }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
+    message: "User current",
   });
 };
 
@@ -438,6 +608,7 @@ module.exports = {
   remove,
   // register,
   login,
+  logout,
   jwtAuth,
   current,
 };
