@@ -364,8 +364,8 @@ const login = async (req, res, next) => {
       };
       // res.cookie("SessionID", jwt, options);
       res.cookie("SessionID", jwt, options); // set the token to response header, so that the client sends it back on each subsequent request
-      console.log("jwt: ", jwt);
-      console.log("jwt2: ", jwt2);
+      // console.log("jwt: ", jwt);
+      // console.log("jwt2: ", jwt2);
 
       // const doc = service.updateUser(user.id, { token: jwt });
       // console.log("doc: ", doc);
@@ -376,7 +376,7 @@ const login = async (req, res, next) => {
         status: "success",
         code: 200,
         message: "JWT created",
-        data: jwt, // jwt2
+        token: jwt, // jwt2
         user: {
           email: email,
           subscription: user.subscription,
@@ -533,7 +533,7 @@ const logout = async (req, res, next) => {
 
 const jwtAuth = async (req, res, next) => {
   const auth = req.headers.authorization; // Bearer token
-  service.getUserById();
+  // service.getUserById();
   if (auth) {
     const token = auth.split(" ")[1];
     try {
@@ -562,6 +562,12 @@ const jwtAuth = async (req, res, next) => {
           code: 401,
           message: "This session has expired. Please login",
         });
+      } else if (user.token !== token) {
+        res.send({
+          status: "failure",
+          code: 401,
+          message: "bad token",
+        });
       }
     } catch (err) {
       res.send({
@@ -584,11 +590,11 @@ const current = (req, res) => {
     status: "success",
     code: 200,
     data: {
-      id: req.user.id,
-      password: req.user.password,
+      // id: req.user.id,
+      // password: req.user.password,
       email: req.user.email,
       subscription: req.user.subscription,
-      token: req.user.token,
+      // token: req.user.token,
     }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
     message: "User current",
   });
