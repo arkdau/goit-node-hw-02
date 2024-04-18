@@ -338,7 +338,7 @@ const login = async (req, res, next) => {
   // Check if the email and password already exist
 
   if (email && password) {
-    const user = await service.getContactByEmail(email);
+    const user = await service.getUserByEmail(email);
     // const validPassword = user.validPassword(password);
 
     if (user && user.validPassword(password)) {
@@ -356,17 +356,23 @@ const login = async (req, res, next) => {
       // }
       // console.log("user: ", user);
 
-
       const options = {
-            maxAge: 20 * 60 * 1000, // would expire in 20minutes
-            httpOnly: true, // The cookie is only accessible by the web server
-            secure: true,
-            sameSite: "None",
-        };
+        maxAge: 20 * 60 * 1000, // would expire in 20minutes
+        httpOnly: true, // The cookie is only accessible by the web server
+        secure: true,
+        sameSite: "None",
+      };
       // res.cookie("SessionID", jwt, options);
       res.cookie("SessionID", jwt, options); // set the token to response header, so that the client sends it back on each subsequent request
       console.log("jwt: ", jwt);
       console.log("jwt2: ", jwt2);
+
+      // const doc = service.updateUser(user.id, { token: jwt });
+      // console.log("doc: ", doc);
+
+
+      service.updateUser(user.id, { token: jwt });
+
       res.send({
         status: "success",
         code: 200,
@@ -483,39 +489,39 @@ const logout = async (req, res) => {
 };
 
 // verify
-const jwtAuth = async (req, res, next) => {
-  const authHeader = req.headers.cookie; // get the session cookie from request header
-
-  if (!authHeader) return res.sendStatus(401); // if there is no cookie from request header, send an unauthorized response.
-  const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
-  const accessToken = cookie.split(";")[0];
-  const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
-  // if true, send an unathorized message, asking for a re-authentication.
-  if (checkIfBlacklisted) {
-    return res
-      .status(401)
-      .json({ message: "This session has expired. Please login" });
-  }
-  // if token has not been blacklisted, verify with jwt to see if it has been tampered with or not.
-  // that's like checking the integrity of the accessToken
-  jsonwebtoken.verify(accessToken, cfg.JWT_SECRET, async (err, decoded) => {
-    if (err) {
-      // if token has been altered, return a forbidden error
-      return res
-        .status(401)
-        .json({ message: "This session has expired. Please login" });
-    }
-
-    const { id } = decoded; // get user id from the decoded token
-    // const user = await User.findById(id); // find user by that `id`
-    const user = await service.getContactById({
-      _id: id,
-    });
-    const { password, ...data } = user._doc; // return user object but the password
-    req.user = data; // put the data object into req.user
-    next();
-  });
-};
+// const jwtAuth = async (req, res, next) => {
+//   const authHeader = req.headers.cookie; // get the session cookie from request header
+//
+//
+//   const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
+//   const accessToken = cookie.split(";")[0];
+//   const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+//   // if true, send an unathorized message, asking for a re-authentication.
+//   if (checkIfBlacklisted) {
+//     return res
+//       .status(401)
+//       .json({ message: "This session has expired. Please login" });
+//   }
+//   // if token has not been blacklisted, verify with jwt to see if it has been tampered with or not.
+//   // that's like checking the integrity of the accessToken
+//   jsonwebtoken.verify(accessToken, cfg.JWT_SECRET, async (err, decoded) => {
+//     if (err) {
+//       // if token has been altered, return a forbidden error
+//       return res
+//         .status(401)
+//         .json({ message: "This session has expired. Please login" });
+//     }
+//
+//     const { id } = decoded; // get user id from the decoded token
+//     // const user = await User.findById(id); // find user by that `id`
+//     const user = await service.getContactById({
+//       _id: id,
+//     });
+//     const { password, ...data } = user._doc; // return user object but the password
+//     req.user = data; // put the data object into req.user
+//     next();
+//   });
+// };
 
 // export async function Logout(req, res) {
 //   try {
@@ -543,46 +549,47 @@ const jwtAuth = async (req, res, next) => {
 //   res.end();
 // }
 
-// const jwtAuth = async (req, res, next) => {
-//   const auth = req.headers.authorization; // Bearer token
-//   if (auth) {
-//     const token = auth.split(" ")[1];
-//     try {
-//       // const jwt = token.verify(token, cfg.JWT_SECRET);
-//       const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
-//       // const user = await User.findOne({
-//       //   _id: payload.id,
-//       // })
-//       const user = await service.getContactById({
-//         _id: payload.id,
-//       });
-//
-//       // const user = users.find((user) => user.id === payload.id);
-//       if (user) {
-//         req.user = user;
-//         next();
-//       } else {
-//         res.send({
-//           status: "failure",
-//           code: 401,
-//           message: "No user",
-//         });
-//       }
-//     } catch (err) {
-//       res.send({
-//         status: "failure",
-//         code: 401,
-//         message: "Wrong token",
-//       });
-//     }
-//   } else {
-//     res.send({
-//       status: "failure",
-//       code: 401,
-//       message: "Not authorized",
-//     });
-//   }
-// };
+const jwtAuth = async (req, res, next) => {
+  const auth = req.headers.authorization; // Bearer token
+  service.getUserById()
+  if (auth) {
+    const token = auth.split(" ")[1];
+    try {
+      // const jwt = token.verify(token, cfg.JWT_SECRET);
+      const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
+      // const user = await User.findOne({
+      //   _id: payload.id,
+      // })
+      const user = await service.getUserById({
+        _id: payload.id,
+      });
+
+      // const user = users.find((user) => user.id === payload.id);
+      if (user && (user.token === token)) {
+        req.user = user;
+        next();
+      } else {
+        res.send({
+          status: "failure",
+          code: 401,
+          message: "No user",
+        });
+      }
+    } catch (err) {
+      res.send({
+        status: "failure",
+        code: 401,
+        message: "Wrong token",
+      });
+    }
+  } else {
+    res.send({
+      status: "failure",
+      code: 401,
+      message: "Not authorized",
+    });
+  }
+};
 
 const current = (req, res) => {
   res.send({
