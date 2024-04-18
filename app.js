@@ -1,11 +1,7 @@
-
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const logger = require("morgan");
-
-
-// const register = require("./controllers/register");
 
 require("dotenv").config();
 
@@ -28,8 +24,6 @@ const contactsRouter = require("./routes/api"); // userRoutes
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
-// const register = require("./routes/api/index");
-
 // load app middlewares
 app.use(logger(formatsLogger));
 app.use(bodyParser.json());
@@ -41,15 +35,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use("/api/contacts", contactsRouter);
-
 app.use("/users/", contactsRouter);
-
-
-
-
-
-
 
 app.use((_, res, __) => {
   res.status(404).json({
@@ -61,12 +47,12 @@ app.use((_, res, __) => {
 });
 
 app.use((err, _, res, __) => {
-  console.log(err.stack)
+  console.log(err.stack);
   res.status(500).json({
-    status: 'fail',
+    status: "fail",
     code: 500,
     message: err.message,
-    data: 'Internal Server Error',
+    data: "Internal Server Error",
   });
 });
 

@@ -3,7 +3,6 @@ const bCrypt = require("bcryptjs");
 
 const { Schema, model } = require("mongoose");
 
-
 const users = new Schema({
   password: {
     type: String,
@@ -37,9 +36,5 @@ users.methods.validPassword = function (password) {
   return bCrypt.compareSync(password, this.password);
 };
 
-// module.exports = mongoose.model("User", users);
-
-
 const Users = model("Users", users);
 module.exports = Users;
-
