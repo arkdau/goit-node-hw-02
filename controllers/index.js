@@ -370,7 +370,6 @@ const login = async (req, res, next) => {
       // const doc = service.updateUser(user.id, { token: jwt });
       // console.log("doc: ", doc);
 
-
       service.updateUser(user.id, { token: jwt });
 
       res.send({
@@ -405,50 +404,33 @@ const login = async (req, res, next) => {
   }
 };
 
-// const logout = async (req, res, next) => {
-//   const { id } req.user;
-//   // const data = req.user;
-//   // data.token = null;
-//
-// // "_id" : ObjectId("661ef5f5cf53cf2c87df3974"),
-// //     "password" : "$2a$06$HAFJTJcxP4M2P/eMPe.ZO.8AglIOwCycHQNPA9exN8OQn1Wg.q.yq",
-// //     "email" : "alicjatricity1978@wp.pl",
-// //     "subscription" : "starter",
-// //     "token" : null,
-//
-//
-//
-//
-//   const data = {
-//   // id: req.user.id,
-//   // password: req.user.password,
-//   // email: req.user.email,
-//   // subscription: req.user.subscription,
-//   token: null,
-// }
-//
-//
-//   try {
-//     // const value = await patchDataschema.validateAsync(data);
-//     const result = await service.updateContact(id, data);
-//     if (result) {
-//       res.json({
-//         status: "success",
-//         code: 204,
-//       });
-//     } else {
-//       res.status(404).json({
-//         status: "error",
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: "Not Found",
-//       });
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
+const logout = async (req, res, next) => {
+  const { id } = req.user;
+
+  try {
+    const result = await service.updateUser(id, { token: null });
+    if (result) {
+      res.json({
+        status: "success",
+        code: 204,
+        message: "You are logged out!",
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+  res.end();
+};
 
 // req.user.deleteToken(req.token,(err,user)=>{
 //            if(err) return res.status(400).send(err);
@@ -462,31 +444,31 @@ const login = async (req, res, next) => {
 //   console.log("token ", req.token);
 // };
 
-const logout = async (req, res) => {
-  try {
-    const authHeader = req.headers.cookie; // get the session cookie from request header
-    if (!authHeader) return res.sendStatus(204); // No content
-    const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
-    const accessToken = cookie.split(";")[0];
-    const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
-    // if true, send a no content response.
-    if (checkIfBlacklisted) return res.sendStatus(204);
-    // otherwise blacklist token
-    const newBlacklist = new Blacklist({
-      token: accessToken,
-    });
-    await newBlacklist.save();
-    // Also clear request cookie on client
-    res.setHeader("Clear-Site-Data", '"cookies"');
-    res.status(200).json({ message: "You are logged out!" });
-  } catch (err) {
-    res.status(500).json({
-      status: "error",
-      message: "Internal Server Error",
-    });
-  }
-  res.end();
-};
+// const logout = async (req, res) => {
+//   try {
+//     const authHeader = req.headers.cookie; // get the session cookie from request header
+//     if (!authHeader) return res.sendStatus(204); // No content
+//     const cookie = authHeader.split("=")[1]; // If there is, split the cookie string to get the actual jwt token
+//     const accessToken = cookie.split(";")[0];
+//     const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+//     // if true, send a no content response.
+//     if (checkIfBlacklisted) return res.sendStatus(204);
+//     // otherwise blacklist token
+//     const newBlacklist = new Blacklist({
+//       token: accessToken,
+//     });
+//     await newBlacklist.save();
+//     // Also clear request cookie on client
+//     res.setHeader("Clear-Site-Data", '"cookies"');
+//     res.status(200).json({ message: "You are logged out!" });
+//   } catch (err) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Internal Server Error",
+//     });
+//   }
+//   res.end();
+// };
 
 // verify
 // const jwtAuth = async (req, res, next) => {
@@ -551,7 +533,7 @@ const logout = async (req, res) => {
 
 const jwtAuth = async (req, res, next) => {
   const auth = req.headers.authorization; // Bearer token
-  service.getUserById()
+  service.getUserById();
   if (auth) {
     const token = auth.split(" ")[1];
     try {
@@ -568,11 +550,17 @@ const jwtAuth = async (req, res, next) => {
       if (user && (user.token === token)) {
         req.user = user;
         next();
-      } else {
+      } else if (!user) {
         res.send({
           status: "failure",
           code: 401,
           message: "No user",
+        });
+      } else if (user.token === null) {
+        res.send({
+          status: "failure",
+          code: 401,
+          message: "This session has expired. Please login",
         });
       }
     } catch (err) {
