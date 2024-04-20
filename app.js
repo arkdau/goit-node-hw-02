@@ -20,7 +20,8 @@ db.then(() => {
 
 const bodyParser = require("body-parser");
 
-const contactsRouter = require("./routes/api"); // userRoutes
+const userRouter = require("./routes/api/users"); // userRoutes
+const contactsRouter = require("./routes/api/contacts"); // userRoutes
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
@@ -35,7 +36,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/users/", contactsRouter);
+app.use("/users/", userRouter);
+app.use("/api/contacts", contactsRouter);
 
 app.use((_, res, __) => {
   res.status(404).json({

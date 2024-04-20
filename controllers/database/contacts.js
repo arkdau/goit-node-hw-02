@@ -1,177 +1,146 @@
-// const Contacts = require("./validation/contacts");
-// const Users = require("./validation/user");
-
-
 // const crypto = require("crypto");
 // const jsonwebtoken = require("jsonwebtoken");
-// const service = require("../service");
-//
-// const cfg = require("./../cfg");
-// const { postDataSchema, patchDataschema } = require("./validation");
-//
-// const get = async (req, res, next) => {
-//   try {
-//     const results = await service.getAllcontacts();
-//     res.json({
-//       status: "success",
-//       code: 200,
-//       data: {
-//         contacts: results,
-//       },
-//     });
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
-//
-// const getById = async (req, res, next) => {
-//   const { id } = req.params;
-//   try {
-//     const result = await service.getContactById(id);
-//     if (result) {
-//       res.json({
-//         status: "success",
-//         code: 200,
-//         data: { contact: result },
-//       });
-//     } else {
-//       res.status(404).json({
-//         status: "error",
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: "Not Found",
-//       });
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
-//
-// const create = async (req, res, next) => {
-//   const { email, password } = req.body;
-//   const data = req.body;
-//   // Check if the email and password already exist
-//   if (email && password) {
-//     const user = await service.getUserByEmail(email);
-//     if (user) {
-//       res.send({
-//         status: "failure - conflict",
-//         code: 409,
-//         message: "email already exists",
-//       });
-//     } else {
-//       try {
-//         const value = await postDataSchema.validateAsync(data);
-//         const result = await service.createContact(value);
-//
-//         res.status(201).json({
-//           status: "success",
-//           code: 201,
-//           message: "User has been registered",
-//           data: { contact: result },
-//         });
-//       } catch (e) {
-//         res.send({
-//           status: "failure - validate data",
-//           code: 400,
-//           message: e,
-//         });
-//
-//         console.error(e);
-//         next(e);
-//       }
-//     }
-//   } else {
-//     res.send({
-//       status: "failure",
-//       code: 400,
-//       message: "Bad Request",
-//     });
-//   }
-//   // end Check
-// };
-//
-// const update = async (req, res, next) => {
-//   const { id } = req.params;
-//   const data = req.body;
-//   try {
-//     const value = await postDataSchema.validateAsync(data);
-//     const result = await service.updateContact(id, value);
-//
-//     if (result) {
-//       res.json({
-//         status: "success",
-//         code: 200,
-//         data: { contact: result },
-//       });
-//     } else {
-//       res.status(404).json({
-//         status: "error",
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: "Not Found",
-//       });
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
-//
-// const patchData = async (req, res, next) => {
-//   const { id } = req.params;
-//   const data = req.body;
-//
-//   try {
-//     const value = await patchDataschema.validateAsync(data);
-//     const result = await service.updateContact(id, value);
-//     if (result) {
-//       res.json({
-//         status: "success",
-//         code: 200,
-//         data: { conatact: result },
-//       });
-//     } else {
-//       res.status(404).json({
-//         status: "error",
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: "Not Found",
-//       });
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
-//
-// const remove = async (req, res, next) => {
-//   const { id } = req.params;
-//
-//   try {
-//     const result = await service.removeContact(id);
-//     if (result) {
-//       res.json({
-//         status: "success",
-//         code: 200,
-//         data: { contact: result },
-//       });
-//     } else {
-//       res.status(404).json({
-//         status: "error",
-//         code: 404,
-//         message: `Not found task id: ${id}`,
-//         data: "Not Found",
-//       });
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
-//
+const service = require("./../../service");
+
+// const cfg = require("./../../cfg");
+const { postDataSchema, patchDataschema } = require("./../validation/contacts");
+
+const get = async (req, res, next) => {
+  try {
+    const results = await service.getAllcontacts();
+    res.json({
+      status: "success",
+      code: 200,
+      data: {
+        contacts: results,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const getById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const result = await service.getContactById(id);
+    if (result) {
+      res.json({
+        status: "success",
+        code: 200,
+        data: { contact: result },
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const create = async (req, res, next) => {
+  const data = req.body;
+  try {
+    const value = await postDataSchema.validateAsync(data);
+    const result = await service.createContact(value);
+
+    res.status(201).json({
+      status: "success",
+      code: 201,
+      data: { contact: result },
+    });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const update = async (req, res, next) => {
+  const { id } = req.params;
+  const data = req.body;
+  try {
+    const value = await postDataSchema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+
+    if (result) {
+      res.json({
+        status: "success",
+        code: 200,
+        data: { contact: result },
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const patchData = async (req, res, next) => {
+  const { id } = req.params;
+  const data = req.body;
+
+  try {
+    const value = await patchDataschema.validateAsync(data);
+    const result = await service.updateContact(id, value);
+    if (result) {
+      res.json({
+        status: "success",
+        code: 200,
+        data: { conatact: result },
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const remove = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const result = await service.removeContact(id);
+    if (result) {
+      res.json({
+        status: "success",
+        code: 200,
+        data: { contact: result },
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found task id: ${id}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
 // function createJWT(payload) {
 //   const header = {
 //     "alg": "HS256",
@@ -220,7 +189,7 @@
 //
 //   return `${firstAndSecondComponents}.${signature}`;
 // }
-//
+
 // const login = async (req, res, next) => {
 //   const { email, password } = req.body;
 //
@@ -277,7 +246,7 @@
 //     });
 //   }
 // };
-//
+
 // const logout = async (req, res, next) => {
 //   const { id } = req.user;
 //
@@ -305,7 +274,7 @@
 //   }
 //   res.end();
 // };
-//
+
 // const jwtAuth = async (req, res, next) => {
 //   const auth = req.headers.authorization; // Bearer token
 //   // service.getUserById();
@@ -359,29 +328,29 @@
 //     });
 //   }
 // };
-//
-// const current = (req, res) => {
-//   res.send({
-//     status: "success",
-//     code: 200,
-//     data: {
-//       email: req.user.email,
-//       subscription: req.user.subscription,
-//     }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
-//     message: "User current",
-//   });
-// };
-//
-// module.exports = {
-//   get,
-//   getById,
-//   create,
-//   update,
-//   patchData,
-//   remove,
-//   // register,
-//   login,
-//   logout,
-//   jwtAuth,
-//   current,
-// };
+
+const current = (req, res) => {
+  res.send({
+    status: "success",
+    code: 200,
+    data: {
+      email: req.user.email,
+      subscription: req.user.subscription,
+    }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
+    message: "User current",
+  });
+};
+
+module.exports = {
+  get,
+  getById,
+  create,
+  update,
+  patchData,
+  remove,
+  // register,
+  // login,
+  // logout,
+  // jwtAuth,
+  current,
+};
