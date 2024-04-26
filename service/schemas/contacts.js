@@ -1,9 +1,10 @@
-const { Schema, model } = require("mongoose");
+// const { Schema, model } = require("mongoose");
+const { Schema, default: mongoose } = require("mongoose");
 
 const contact = new Schema({
   name: {
     type: String,
-    minlength: 2, 
+    minlength: 2,
     required: [true, "Set name for contact"],
   },
   email: {
@@ -20,5 +21,5 @@ const contact = new Schema({
   },
 });
 
-const Contacts = model("contacts", contact);
-module.exports = Contacts;
+
+module.exports = mongoose.model("contacts", contact);

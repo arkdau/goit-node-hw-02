@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -21,7 +20,8 @@ db.then(() => {
 
 const bodyParser = require("body-parser");
 
-const contactsRouter = require("./routes/api"); // userRoutes
+const userRouter = require("./routes/api/users"); // userRoutes
+const contactsRouter = require("./routes/api/contacts"); // userRoutes
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
@@ -34,8 +34,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 // parse application/json
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
+app.use("/users/", userRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res, __) => {
@@ -48,12 +49,12 @@ app.use((_, res, __) => {
 });
 
 app.use((err, _, res, __) => {
-  console.log(err.stack)
+  console.log(err.stack);
   res.status(500).json({
-    status: 'fail',
+    status: "fail",
     code: 500,
     message: err.message,
-    data: 'Internal Server Error',
+    data: "Internal Server Error",
   });
 });
 

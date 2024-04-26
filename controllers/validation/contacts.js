@@ -18,4 +18,4 @@ const patchDataschema = Joi.object().keys({
 module.exports = {
   postDataSchema,
   patchDataschema,
-};
+}
