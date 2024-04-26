@@ -375,7 +375,6 @@ module.exports = {
   update,
   patchData,
   remove,
-  // register,
   login,
   logout,
   jwtAuth,
