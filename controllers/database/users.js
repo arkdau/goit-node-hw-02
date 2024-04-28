@@ -5,6 +5,9 @@ const service = require("./../../service");
 const cfg = require("./../../cfg");
 const { postDataSchema, patchDataschema } = require("./../validation/user");
 
+
+const path = require("path");
+
 const get = async (req, res, next) => {
   try {
     const results = await service.getAllcontacts();
@@ -122,7 +125,7 @@ const patchData = async (req, res, next) => {
 
   try {
     const value = await patchDataschema.validateAsync(data);
-    const result = await service.updateContact(id, value);
+    const result = await service.updateUser(id, value);
     if (result) {
       res.json({
         status: "success",
@@ -368,6 +371,214 @@ const current = (req, res) => {
   });
 };
 
+// const { stat, mkdir } = require("fs/promises");
+// const multer = require("multer");
+// const path = require("path");
+//
+//
+//   // const UPLOAD_DIR = path.join(__dirname, "public", "avatars");
+//   const UPLOAD_DIR = path.join(__dirname, "./../../tmp");
+//
+//   // double check that  the dir exists
+//   stat(UPLOAD_DIR).catch(() => mkdir(UPLOAD_DIR, { recursive: true }));
+//
+//   const storage = multer.diskStorage({
+//     destination: function (_, __, cb) {
+//       // check ext and decide where the fils should go
+//       cb(null, UPLOAD_DIR);
+//     },
+//     filename: function (_, file, cb) {
+//       const fileExt = path.extname(file.originalname);
+//       const fileNameWithoutExt = path.basename(file.originalname, fileExt);
+//       const finalFileName = `${fileNameWithoutExt}-${Date.now()}${fileExt}`;
+//       // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+//       // cb(null, file.fieldname + "-" + uniqueSuffix);
+//       cb(null, finalFileName);
+//     },
+//   });
+//
+//   const upload = multer({
+//     // dest: UPLOAD_DIR,
+//     storage,
+//     limits: {
+//       fileSize: 4 * 1024 * 1024, // 1MB
+//     },
+//   });
+
+
+
+const gravatar = require('gravatar');
+const { copyFile, rename, unlink } = require("fs/promises");
+const DEST_DIR = path.join(__dirname, "./../../public/avatars/");
+// const avatars = (upload.single("picture"), (req, res) => {
+const avatars = async (req, res) => {
+
+
+// const { description } = req.body;
+
+//   copyFile('source.txt', 'destination.txt', (err) => {
+//   if (err) throw err;
+//   console.log('source.txt was copied to destination.txt');
+// // });
+
+ // http://localhost:<port>/avatars/<nazwa pliku z rozszerzeniem>
+
+  // app.patch("/users/avatars", upload.single("picture"), (req, res) => {
+    // if (req.file) {
+    //   res.send({
+    //     code: 201,
+    //     status: "SUCCES",
+    //     message: "The file has been created",
+    //   });
+    // } else {
+    //   res.send({
+    //     code: 400,
+    //     status: "FAILURE",
+    //     message: "The file cannot be stored",
+    //   });
+    // }
+  // });
+
+
+  const { path: temporaryName, originalname } = req.file;
+
+// Jimp.read(originalname)
+//   .then((lenna) => {
+//     return lenna
+//       .resize(256, 256) // resize
+//       .quality(60) // set JPEG quality
+//       .greyscale() // set greyscale
+//       .write("lena-small-bw.jpg"); // save
+//   })
+//   .catch((err) => {
+//     console.error(err);
+//   });
+
+
+  const fileExt = path.extname(originalname);
+  const fileNameWithoutExt = path.basename(originalname, fileExt);
+  const finalFileName = `${fileNameWithoutExt}-${Date.now()}_250x250${fileExt}`;
+
+
+
+
+  const Jimp = require('jimp');
+  async function resize() {
+  // Read the image.
+  const image = await Jimp.read(temporaryName);
+  // Resize the image to width 150 and heigth 150.
+  await image.resize(250, 250);
+  // Save and overwrite the image
+  // await image.writeAsync(`test/${Date.now()}_250x250.png`);
+
+  // await image.writeAsync(`test/${Date.now()}_250x250.png`);
+  await image.writeAsync(temporaryName);
+
+
+  // const fileName = path.join(DEST_DIR, originalname);
+  const fileName = path.join(DEST_DIR, finalFileName);
+  try {
+    await rename(temporaryName, fileName);
+  } catch (err) {
+    await unlink(temporaryName);
+    return next(err);
+  }
+
+
+
+
+
+
+}
+resize();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // res.json({ description, message: 'Plik załadowany pomyślnie', status: 200 });
+
+
+  // const auth = req.headers.authorization; // Bearer token
+//     const token = auth.split(" ")[1];
+//       const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
+// const user = await service.getUserById({
+//   _id: payload.id,
+// });
+
+  user = req.user;
+  
+  // console.log("user avatarURL: ", user.avatarURL);
+  //
+  
+
+const url = gravatar.url(user.email, {
+  s: "100",
+  r: "x",
+  d: "retro",
+}, false);
+
+
+  // const { _id } = req.params;
+  const data = {avatarURL : url};
+try {
+  // const value = await postDataSchema.validateAsync(data);
+  const result = await service.updateUser(user._id, data);
+                                                          
+  // if (result) {
+  //   res.json({
+  //     status: "success",
+  //     code: 200,
+  //     data: { contact: result },
+  //   });
+  // } else {
+  //   res.status(404).json({
+  //     status: "error",
+  //     code: 404,
+  //     message: `Not found task id: ${id}`,
+  //     data: "Not Found",
+  //   });
+  // }
+} catch (e) {
+  console.error(e);
+  // next(e);
+}
+
+
+
+
+
+
+
+
+  res.send({
+    status: "success",
+    code: 200,
+    // data: {
+    //   email: req.user.email,
+    //   subscription: req.user.subscription,
+    // }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
+    message: "Update avatar",
+    ResponseBody: {
+      "avatarURL": user.avatarURL,
+    },
+  });
+};
+
 module.exports = {
   get,
   getById,
@@ -379,4 +590,5 @@ module.exports = {
   logout,
   jwtAuth,
   current,
-}
+  avatars,
+};
