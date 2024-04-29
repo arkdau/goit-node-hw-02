@@ -1,6 +1,6 @@
 const Contacts = require("./schemas/contacts");
 const Users = require("./schemas/users");
-const gravatar = require('gravatar');
+const gravatar = require("gravatar");
 
 const getAllcontacts = async () => {
   return Contacts.find();
@@ -22,11 +22,23 @@ const removeContact = (id) => {
   return Contacts.deleteOne({ _id: id });
 };
 
-// const getContactByEmail = (email) => {
-//   return Users.findOne({ email: email });
-// };
+// Users
 
-const createUser = async ({ password, email, subscription, token, owner, avatarURL }) => {
+const getAllusers = async () => {
+  return Users.find();
+};
+
+const getUserById = (id) => {
+  return Users.findOne({ _id: id });
+};
+
+const getUserByEmail = (email) => {
+  return Users.findOne({ email: email });
+};
+
+const createUser = async (
+  { password, email, subscription, token, owner, avatarURL },
+) => {
   const newUser = new Users({
     password,
     email,
@@ -46,16 +58,12 @@ const createUser = async ({ password, email, subscription, token, owner, avatarU
   return newUser;
 };
 
-const getUserById = (id) => {
-  return Users.findOne({ _id: id });
-};
-
-const getUserByEmail = (email) => {
-  return Users.findOne({ email: email });
-};
-
 const updateUser = async (id, fields) => {
   return await Users.findByIdAndUpdate({ _id: id }, fields, { new: true });
+};
+
+const removeUser = (id) => {
+  return Users.deleteOne({ _id: id });
 };
 
 module.exports = {

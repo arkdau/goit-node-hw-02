@@ -9,9 +9,7 @@ const { stat, mkdir } = require("fs/promises");
 const multer = require("multer");
 const path = require("path");
 
-// const UPLOAD_DIR = path.join(__dirname, "public", "avatars");
 const UPLOAD_DIR = path.join(__dirname, "./../../tmp");
-// const DEST_DIR = path.join(__dirname, "./../../public/avatars/");
 
 // double check that  the dir exists
 stat(UPLOAD_DIR).catch(() => mkdir(UPLOAD_DIR, { recursive: true }));
@@ -23,12 +21,6 @@ const storage = multer.diskStorage({
   },
   filename: function (_, file, cb) {
     cb(null, file.originalname);
-    // const fileExt = path.extname(file.originalname);
-    // const fileNameWithoutExt = path.basename(file.originalname, fileExt);
-    // const finalFileName = `${fileNameWithoutExt}-${Date.now()}${fileExt}`;
-    // // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    // // cb(null, file.fieldname + "-" + uniqueSuffix);
-    // cb(null, finalFileName);
   },
 });
 

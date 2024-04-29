@@ -2,20 +2,23 @@ const crypto = require("crypto");
 const jsonwebtoken = require("jsonwebtoken");
 const service = require("./../../service");
 
-const cfg = require("./../../cfg");
 const { postDataSchema, patchDataschema } = require("./../validation/user");
 
+const cfg = require("./../../cfg");
 
 const path = require("path");
+const gravatar = require("gravatar");
+const { rename, unlink } = require("fs/promises");
+const Jimp = require("jimp");
 
 const get = async (req, res, next) => {
   try {
-    const results = await service.getAllcontacts();
+    const results = await service.getAllusers();
     res.json({
       status: "success",
       code: 200,
       data: {
-        contacts: results,
+        users: results,
       },
     });
   } catch (e) {
@@ -27,12 +30,12 @@ const get = async (req, res, next) => {
 const getById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const result = await service.getContactById(id);
+    const result = await service.getUserById(id);
     if (result) {
       res.json({
         status: "success",
         code: 200,
-        data: { contact: result },
+        data: { user: result },
       });
     } else {
       res.status(404).json({
@@ -55,39 +58,49 @@ const create = async (req, res, next) => {
   if (email && password) {
     const user = await service.getUserByEmail(email);
     if (user) {
+      res.setHeader("Connection", "close");
       res.send({
         status: "failure - conflict",
         code: 409,
         message: "email already exists",
       });
+      res.end();
     } else {
       try {
         const value = await postDataSchema.validateAsync(data);
         const result = await service.createUser(value);
 
+        res.setHeader("Connection", "close");
         res.status(201).json({
           status: "success",
           code: 201,
           message: "User has been registered",
-          data: { contact: result },
+          data: { user: result },
         });
+
+        res.end();
       } catch (e) {
+        res.setHeader("Connection", "close");
         res.send({
           status: "failure - validate data",
           code: 400,
           message: e,
         });
 
+        res.end();
         console.error(e);
         next(e);
       }
     }
   } else {
+    res.setHeader("Connection", "close");
     res.send({
       status: "failure",
       code: 400,
       message: "Bad Request",
     });
+
+    res.end();
   }
   // end Check
 };
@@ -97,13 +110,13 @@ const update = async (req, res, next) => {
   const data = req.body;
   try {
     const value = await postDataSchema.validateAsync(data);
-    const result = await service.updateContact(id, value);
+    const result = await service.updateUser(id, value);
 
     if (result) {
       res.json({
         status: "success",
         code: 200,
-        data: { contact: result },
+        data: { user: result },
       });
     } else {
       res.status(404).json({
@@ -150,12 +163,12 @@ const remove = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const result = await service.removeContact(id);
+    const result = await service.removeUser(id);
     if (result) {
       res.json({
         status: "success",
         code: 200,
-        data: { contact: result },
+        data: { user: result },
       });
     } else {
       res.status(404).json({
@@ -245,6 +258,7 @@ const login = async (req, res, next) => {
 
       service.updateUser(user.id, { token: jwt });
 
+      res.setHeader("Connection", "close");
       res.send({
         status: "success",
         code: 200,
@@ -255,6 +269,7 @@ const login = async (req, res, next) => {
           subscription: user.subscription,
         },
       });
+      res.end();
     } else if (user === null) {
       res.send({
         status: "failure",
@@ -275,6 +290,7 @@ const login = async (req, res, next) => {
       message: "Bad Request",
     });
   }
+  // req.end();
 };
 
 const logout = async (req, res, next) => {
@@ -307,20 +323,14 @@ const logout = async (req, res, next) => {
 
 const jwtAuth = async (req, res, next) => {
   const auth = req.headers.authorization; // Bearer token
-  // service.getUserById();
   if (auth) {
     const token = auth.split(" ")[1];
     try {
-      // const jwt = token.verify(token, cfg.JWT_SECRET);
       const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
-      // const user = await User.findOne({
-      //   _id: payload.id,
-      // })
       const user = await service.getUserById({
         _id: payload.id,
       });
 
-      // const user = users.find((user) => user.id === payload.id);
       if (user && (user.token === token)) {
         req.user = user;
         next();
@@ -371,111 +381,16 @@ const current = (req, res) => {
   });
 };
 
-// const { stat, mkdir } = require("fs/promises");
-// const multer = require("multer");
-// const path = require("path");
-//
-//
-//   // const UPLOAD_DIR = path.join(__dirname, "public", "avatars");
-//   const UPLOAD_DIR = path.join(__dirname, "./../../tmp");
-//
-//   // double check that  the dir exists
-//   stat(UPLOAD_DIR).catch(() => mkdir(UPLOAD_DIR, { recursive: true }));
-//
-//   const storage = multer.diskStorage({
-//     destination: function (_, __, cb) {
-//       // check ext and decide where the fils should go
-//       cb(null, UPLOAD_DIR);
-//     },
-//     filename: function (_, file, cb) {
-//       const fileExt = path.extname(file.originalname);
-//       const fileNameWithoutExt = path.basename(file.originalname, fileExt);
-//       const finalFileName = `${fileNameWithoutExt}-${Date.now()}${fileExt}`;
-//       // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-//       // cb(null, file.fieldname + "-" + uniqueSuffix);
-//       cb(null, finalFileName);
-//     },
-//   });
-//
-//   const upload = multer({
-//     // dest: UPLOAD_DIR,
-//     storage,
-//     limits: {
-//       fileSize: 4 * 1024 * 1024, // 1MB
-//     },
-//   });
-
-
-
-const gravatar = require('gravatar');
-const { copyFile, rename, unlink } = require("fs/promises");
-const DEST_DIR = path.join(__dirname, "./../../public/avatars/");
-// const avatars = (upload.single("picture"), (req, res) => {
-const avatars = async (req, res) => {
-
-
-// const { description } = req.body;
-
-//   copyFile('source.txt', 'destination.txt', (err) => {
-//   if (err) throw err;
-//   console.log('source.txt was copied to destination.txt');
-// // });
-
- // http://localhost:<port>/avatars/<nazwa pliku z rozszerzeniem>
-
-  // app.patch("/users/avatars", upload.single("picture"), (req, res) => {
-    // if (req.file) {
-    //   res.send({
-    //     code: 201,
-    //     status: "SUCCES",
-    //     message: "The file has been created",
-    //   });
-    // } else {
-    //   res.send({
-    //     code: 400,
-    //     status: "FAILURE",
-    //     message: "The file cannot be stored",
-    //   });
-    // }
-  // });
-
-
-  const { path: temporaryName, originalname } = req.file;
-
-// Jimp.read(originalname)
-//   .then((lenna) => {
-//     return lenna
-//       .resize(256, 256) // resize
-//       .quality(60) // set JPEG quality
-//       .greyscale() // set greyscale
-//       .write("lena-small-bw.jpg"); // save
-//   })
-//   .catch((err) => {
-//     console.error(err);
-//   });
-
-
-  const fileExt = path.extname(originalname);
-  const fileNameWithoutExt = path.basename(originalname, fileExt);
-  const finalFileName = `${fileNameWithoutExt}-${Date.now()}_250x250${fileExt}`;
-
-
-
-
-  const Jimp = require('jimp');
-  async function resize() {
+async function resize(temporaryName, finalFileName, pxdx, pxdy) {
+  const DEST_DIR = path.join(__dirname, "./../../public/avatars/");
   // Read the image.
   const image = await Jimp.read(temporaryName);
   // Resize the image to width 150 and heigth 150.
-  await image.resize(250, 250);
+  await image.resize(pxdx, pxdy);
   // Save and overwrite the image
-  // await image.writeAsync(`test/${Date.now()}_250x250.png`);
-
-  // await image.writeAsync(`test/${Date.now()}_250x250.png`);
   await image.writeAsync(temporaryName);
 
-
-  // const fileName = path.join(DEST_DIR, originalname);
+  // rename file and remove to /public/avatars/
   const fileName = path.join(DEST_DIR, finalFileName);
   try {
     await rename(temporaryName, fileName);
@@ -483,100 +398,50 @@ const avatars = async (req, res) => {
     await unlink(temporaryName);
     return next(err);
   }
-
-
-
-
-
-
 }
-resize();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // res.json({ description, message: 'Plik załadowany pomyślnie', status: 200 });
-
-
-  // const auth = req.headers.authorization; // Bearer token
-//     const token = auth.split(" ")[1];
-//       const payload = jsonwebtoken.verify(token, cfg.JWT_SECRET);
-// const user = await service.getUserById({
-//   _id: payload.id,
-// });
-
+const avatars = async (req, res) => {
+  // Names files
+  const { path: temporaryName, originalname } = req.file;
+  const fileExt = path.extname(originalname);
   user = req.user;
-  
-  // console.log("user avatarURL: ", user.avatarURL);
-  //
-  
+  const finalFileName = `${user.email}-${Date.now()}_250x250${fileExt}`;
 
-const url = gravatar.url(user.email, {
-  s: "100",
-  r: "x",
-  d: "retro",
-}, false);
+  // resize file
+  resize(temporaryName, finalFileName, 250, 250);
+  // create - Gravatar images
+  const url = gravatar.url(user.email, {
+    s: "100",
+    r: "x",
+    d: "identicon",
+  }, false);
 
+  // Update user
+  const data = { avatarURL: url };
+  try {
+    const result = await service.updateUser(user._id, data);
 
-  // const { _id } = req.params;
-  const data = {avatarURL : url};
-try {
-  // const value = await postDataSchema.validateAsync(data);
-  const result = await service.updateUser(user._id, data);
-                                                          
-  // if (result) {
-  //   res.json({
-  //     status: "success",
-  //     code: 200,
-  //     data: { contact: result },
-  //   });
-  // } else {
-  //   res.status(404).json({
-  //     status: "error",
-  //     code: 404,
-  //     message: `Not found task id: ${id}`,
-  //     data: "Not Found",
-  //   });
-  // }
-} catch (e) {
-  console.error(e);
-  // next(e);
-}
-
-
-
-
-
-
-
-
-  res.send({
-    status: "success",
-    code: 200,
-    // data: {
-    //   email: req.user.email,
-    //   subscription: req.user.subscription,
-    // }, // users.map(user => {return { id: req.user.id, login: req.user.login }}),
-    message: "Update avatar",
-    ResponseBody: {
-      "avatarURL": user.avatarURL,
-    },
-  });
+    if (result) {
+      res.json({
+        status: "success",
+        code: 200,
+        message: "Update avatar",
+        ResponseBody: {
+          "avatarURL": user.avatarURL,
+        },
+      });
+    } else {
+      res.status(401).json({
+        status: "Unauthorized",
+        code: 404,
+        ResponseBody: {
+          "message": "Not authorized",
+        },
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 module.exports = {
