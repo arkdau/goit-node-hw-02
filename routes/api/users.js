@@ -35,7 +35,8 @@ const upload = multer({
 router.patch(
   "/avatars",
   ctrlUser.jwtAuth,
-  upload.single("RequestBody"),
+  // upload.single("RequestBody"),
+  upload.single("avatar"), // lepiej to brzmi
   ctrlUser.avatars,
 );
 
