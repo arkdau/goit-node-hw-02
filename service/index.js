@@ -37,7 +37,7 @@ const getUserByEmail = (email) => {
 };
 
 const createUser = async (
-  { password, email, subscription, token, owner, avatarURL },
+  { password, email, subscription, token, owner, avatarURL, verify, verificationToken },
 ) => {
   const newUser = new Users({
     password,
@@ -46,6 +46,8 @@ const createUser = async (
     token,
     owner,
     avatarURL,
+    verify,
+    verificationToken,
   });
   const url = gravatar.url(email, {
     s: "100",
@@ -54,6 +56,7 @@ const createUser = async (
   }, false);
   newUser.setPassword(password);
   newUser.setAvatar(url);
+  newUser.setToken();
   await newUser.save();
   return newUser;
 };

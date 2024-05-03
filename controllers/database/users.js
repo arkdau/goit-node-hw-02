@@ -444,6 +444,41 @@ const avatars = async (req, res) => {
   }
 };
 
+// Status: 200 OK
+// ResponseBody: {
+//   message: 'Verification successful',
+// }
+
+// Status: 404 Not Found
+// ResponseBody: {
+//   message: 'User not found'
+// }
+
+const verify = async (req, res) => {
+  const verificationToken = req.params;
+  if (false) {
+    res.setHeader("Connection", "close");
+    res.json({
+      status: "OK",
+      code: 200,
+      ResponseBody: {
+        message: "Verification successful",
+      },
+    });
+    res.end();
+  } else {
+    res.setHeader("Connection", "close");
+    res.status(404).json({
+      status: "Not Found",
+      code: 404,
+      ResponseBody: {
+        "message": "User not found",
+      },
+    });
+    res.end();
+  }
+};
+
 module.exports = {
   get,
   getById,
@@ -456,4 +491,5 @@ module.exports = {
   jwtAuth,
   current,
   avatars,
+  verify,
 };

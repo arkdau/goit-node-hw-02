@@ -40,4 +40,10 @@ router.patch(
   ctrlUser.avatars,
 );
 
+router.get(
+  "/verify/:verificationToken",
+  // ctrlUser.jwtAuth,
+  ctrlUser.verify,
+);
+
 module.exports = router;

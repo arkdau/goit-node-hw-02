@@ -47,54 +47,6 @@ app.use(express.static('public'));
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// const UPLOAD_DIR = path.join(__dirname, "public", "avatars");
-// const UPLOAD_DIR = path.join(__dirname, "tmp");
-//
-// // double check that  the dir exists
-// stat(UPLOAD_DIR).catch(() => mkdir(UPLOAD_DIR, { recursive: true }));
-//
-// const storage = multer.diskStorage({
-//   destination: function (_, __, cb) {
-//     // check ext and decide where the fils should go
-//     cb(null, UPLOAD_DIR);
-//   },
-//   filename: function (_, file, cb) {
-//     const fileExt = path.extname(file.originalname);
-//     const fileNameWithoutExt = path.basename(file.originalname, fileExt);
-//     const finalFileName = `${fileNameWithoutExt}-${Date.now()}${fileExt}`;
-//     // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-//     // cb(null, file.fieldname + "-" + uniqueSuffix);
-//     cb(null, finalFileName);
-//   },
-// });
-//
-// const upload = multer({
-//   // dest: UPLOAD_DIR,
-//   storage,
-//   limits: {
-//     fileSize: 1024 * 1024, // 1MB
-//   },
-// });
-//
-// // http://localhost:<port>/avatars/<nazwa pliku z rozszerzeniem>
-//
-// app.patch("/users/avatars", upload.single("picture"), (req, res) => {
-//   if (req.file) {
-//     res.send({
-//       code: 201,
-//       status: "SUCCES",
-//       message: "The file has been created",
-//     });
-//   } else {
-//     res.send({
-//       code: 400,
-//       status: "FAILURE",
-//       message: "The file cannot be stored",
-//     });
-//   }
-// });
-///////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -103,57 +55,7 @@ app.use(express.static('public'));
 
 
 
-// const fs = require("node:fs/promises");
-//
-// const baseDir = path.dirname(__dirname);
-// const avatarPath = path.join(
-//   baseDir,
-//   "/public/avatars/raptor-f35-1714168812487.png",
-// );
-//
-// app.get("/avatars", async (req, res) => {
-//   try {
-//     const data = await fs.readFile(avatarPath, "utf8");
-//
-//     // const results = await service.getAllcontacts();
-//
-//     res.setHeader("Connection", "close");
-//     res.json({
-//       status: "success",
-//       code: 200,
-//       // data: {
-//       file: data,
-//       // },
-//     });
-//     res.end();
-//   } catch (e) {
-//     console.error(e);
-//     // next(e);
-//   }
-//
-//   req.end();
-// });
 
-// app.get =  (req, res) => {
-//
-//   try {
-//
-//
-//     const data = await fs.readFile(contactsPath, "utf8");
-//
-//     // const results = await service.getAllcontacts();
-//     res.json({
-//       status: "success",
-//       code: 200,
-//       // data: {
-//         file: data,
-//       // },
-//     });
-//   } catch (e) {
-//     console.error(e);
-//     next(e);
-//   }
-// };
 
 
 
