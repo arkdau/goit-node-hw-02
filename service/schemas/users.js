@@ -26,6 +26,10 @@ const users = new Schema({
     type: Schema.Types.ObjectId,
     ref: "user",
   },
+  avatarURL: {
+    type: String,
+    default: null,
+  },
 });
 
 users.methods.setPassword = function (password) {
@@ -36,5 +40,10 @@ users.methods.validPassword = function (password) {
   return bCrypt.compareSync(password, this.password);
 };
 
+users.methods.setAvatar = function (url) {
+  this.avatarURL = url;
+};
+
 const Users = model("Users", users);
+
 module.exports = Users;
