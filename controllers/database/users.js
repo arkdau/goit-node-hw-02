@@ -10,6 +10,7 @@ const path = require("path");
 const gravatar = require("gravatar");
 const { rename, unlink } = require("fs/promises");
 const Jimp = require("jimp");
+const Users = require("../../service/schemas/users");
 
 const get = async (req, res, next) => {
   try {
@@ -51,6 +52,31 @@ const getById = async (req, res, next) => {
   }
 };
 
+const getByVerifyToken = async (req, res) => {
+  const { verificationToken } = req.params;
+  try {
+    const result = await service.getUserByVerifyToken(verificationToken);
+    if (result) {
+      // result.verificationToken = null;
+      // result.verify = true;
+      res.json({
+        status: "success",
+        code: 200,
+        data: { user: result },
+      });
+    } else {
+      res.status(404).json({
+        status: "error",
+        code: 404,
+        message: `Not found user: ${verificationToken}`,
+        data: "Not Found",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 const create = async (req, res, next) => {
   const { email, password } = req.body;
   const data = req.body;
@@ -70,17 +96,33 @@ const create = async (req, res, next) => {
         const value = await postDataSchema.validateAsync(data);
         const result = await service.createUser(value);
 
-        res.setHeader("Connection", "close");
+        // send an email to the user's e-mail address and indicate
+        // the email verification link (/users/verify/:verificationToken) in the message;
+
+        const sendStatus = await service.sendMailer({
+          to: email,
+          subject: "Verification link",
+          text: "This is the user verification link,  Please confirm it.",
+          html:
+            `<strong>This is the user verification link,  Please confirm it.</strong><br><a href="http://localhost:3000/users/verify/${result.verificationToken}">/users/verify/${result.verificationToken}</a>`,
+        });
+
+        // res.setHeader("Connection", "close");
         res.status(201).json({
           status: "success",
           code: 201,
           message: "User has been registered",
           data: { user: result },
         });
+        // if (sendStatus.status) {
+        //   res.send(sendStatus.message);
+        // } else {
+        //   res.status(400).send(sendStatus.message);
+        // }
 
-        res.end();
+        // res.end();
       } catch (e) {
-        res.setHeader("Connection", "close");
+        // res.setHeader("Connection", "close");
         res.send({
           status: "failure - validate data",
           code: 400,
@@ -456,7 +498,16 @@ const avatars = async (req, res) => {
 
 const verify = async (req, res) => {
   const verificationToken = req.params;
-  if (false) {
+  const user = await service.getUserByVerifyToken(verificationToken);
+
+  if (user) {
+  //     const user = await service.getUserById({
+  //       _id: payload.id,
+  //     });
+    const verification = service.updateUser(user._id, {verify: true, verificationToken: null,})
+    // user.verificationToken = null;
+    // user.verify = true;
+
     res.setHeader("Connection", "close");
     res.json({
       status: "OK",

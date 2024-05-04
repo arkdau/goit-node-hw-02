@@ -1,6 +1,7 @@
 const Contacts = require("./schemas/contacts");
 const Users = require("./schemas/users");
 const gravatar = require("gravatar");
+const { sendMailSendGrid } = require("./email/mail");
 
 const getAllcontacts = async () => {
   return Contacts.find();
@@ -36,8 +37,23 @@ const getUserByEmail = (email) => {
   return Users.findOne({ email: email });
 };
 
+const getUserByVerifyToken = (verificationToken) => {
+  return Users.findOne(verificationToken);
+  // return await Users.findByIdAndUpdate({ _id: id }, fields, { new: true });
+
+};
+
 const createUser = async (
-  { password, email, subscription, token, owner, avatarURL, verify, verificationToken },
+  {
+    password,
+    email,
+    subscription,
+    token,
+    owner,
+    avatarURL,
+    verify,
+    verificationToken,
+  },
 ) => {
   const newUser = new Users({
     password,
@@ -69,6 +85,23 @@ const removeUser = (id) => {
   return Users.deleteOne({ _id: id });
 };
 
+const sendMailer = async ({ to, subject, text, html }) => {
+  const from = "akson_control@o2.pl";
+  // const { to, subject, text } = req.body;
+
+  // let sendMailer = process.env.MAIL_SENDER === "SEND_GRID"
+  // ? sendMailSendGrid
+  // : sendMailNodeMailer;
+
+  sendMailSendGrid({ to, from, subject, text, html })
+    .then(() => {
+      console.log("The mail has been sent");
+    })
+    .catch((err) => {
+      console.log(`The mail cannot be sent: ${err.message}`);
+    });
+};
+
 module.exports = {
   getAllcontacts,
   getContactById,
@@ -79,4 +112,6 @@ module.exports = {
   getUserById,
   getUserByEmail,
   updateUser,
+  sendMailer,
+  getUserByVerifyToken,
 };
