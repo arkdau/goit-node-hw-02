@@ -40,7 +40,6 @@ const getUserByEmail = (email) => {
 const getUserByVerifyToken = (verificationToken) => {
   return Users.findOne(verificationToken);
   // return await Users.findByIdAndUpdate({ _id: id }, fields, { new: true });
-
 };
 
 const createUser = async (
@@ -87,11 +86,6 @@ const removeUser = (id) => {
 
 const sendMailer = async ({ to, subject, text, html }) => {
   const from = "akson_control@o2.pl";
-  // const { to, subject, text } = req.body;
-
-  // let sendMailer = process.env.MAIL_SENDER === "SEND_GRID"
-  // ? sendMailSendGrid
-  // : sendMailNodeMailer;
 
   sendMailSendGrid({ to, from, subject, text, html })
     .then(() => {

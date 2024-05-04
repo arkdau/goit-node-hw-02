@@ -498,30 +498,18 @@ const avatars = async (req, res) => {
   }
 };
 
-// Status: 200 OK
-// ResponseBody: {
-//   message: 'Verification successful',
-// }
-
-// Status: 404 Not Found
-// ResponseBody: {
-//   message: 'User not found'
-// }
-
 const verify = async (req, res) => {
   const verificationToken = req.params;
   const user = await service.getUserByVerifyToken(verificationToken);
 
   if (user) {
-    //     const user = await service.getUserById({
-    //       _id: payload.id,
-    //     });
+    const user = await service.getUserById({
+      _id: payload.id,
+    });
     const verification = service.updateUser(user._id, {
       verify: true,
       verificationToken: null,
     });
-    // user.verificationToken = null;
-    // user.verify = true;
 
     res.setHeader("Connection", "close");
     res.json({
@@ -552,18 +540,6 @@ const reSendVerifyEmail = async (req, res) => {
       password: "xxx1",
       email: email,
     });
-    // } catch (e) {
-    //   res.setHeader("Connection", "close");
-    //   res.json({
-    //     status: "Bad Request",
-    //     code: 400,
-    //     ResponseBody: {
-    //       message: "Error Joi validation. Bad email",
-    //     },
-    //   });
-    //   res.end();
-    //   console.error(e);
-    // }
     if (value.email) {
       user = await service.getUserByEmail(value.email);
 
@@ -590,6 +566,16 @@ const reSendVerifyEmail = async (req, res) => {
           } catch (e) {
             console.error(e);
           }
+        } else {
+          res.setHeader("Connection", "close");
+          res.json({
+            status: "Bad Request",
+            code: 400,
+            ResponseBody: {
+              message: "Verification has already been passed",
+            },
+          });
+          res.end();
         }
       }
     } else {
