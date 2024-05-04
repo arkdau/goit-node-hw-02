@@ -281,7 +281,7 @@ const login = async (req, res, next) => {
   if (email && password) {
     const user = await service.getUserByEmail(email);
 
-    if (user && user.validPassword(password)) {
+    if (user && user.validPassword(password) && user.verify) {
       const payload = {
         id: user.id,
       };
@@ -317,6 +317,12 @@ const login = async (req, res, next) => {
         status: "failure",
         code: 401,
         message: "User does not exist",
+      });
+    } else if (user.verify === false) {
+      res.send({
+        status: "failure",
+        code: 401,
+        message: "Not user verification link,  Please confirm it",
       });
     } else {
       res.send({
@@ -373,7 +379,7 @@ const jwtAuth = async (req, res, next) => {
         _id: payload.id,
       });
 
-      if (user && (user.token === token)) {
+      if (user && (user.token === token) && (user.verify)) {
         req.user = user;
         next();
       } else if (!user) {
@@ -393,6 +399,12 @@ const jwtAuth = async (req, res, next) => {
           status: "failure",
           code: 401,
           message: "bad token",
+        });
+      } else if (!user.verify) {
+        res.send({
+          status: "failure",
+          code: 401,
+          message: "Not user verification link,  Please confirm it",
         });
       }
     } catch (err) {
@@ -501,10 +513,13 @@ const verify = async (req, res) => {
   const user = await service.getUserByVerifyToken(verificationToken);
 
   if (user) {
-  //     const user = await service.getUserById({
-  //       _id: payload.id,
-  //     });
-    const verification = service.updateUser(user._id, {verify: true, verificationToken: null,})
+    //     const user = await service.getUserById({
+    //       _id: payload.id,
+    //     });
+    const verification = service.updateUser(user._id, {
+      verify: true,
+      verificationToken: null,
+    });
     // user.verificationToken = null;
     // user.verify = true;
 
