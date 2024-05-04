@@ -99,7 +99,7 @@ const create = async (req, res, next) => {
         // send an email to the user's e-mail address and indicate
         // the email verification link (/users/verify/:verificationToken) in the message;
 
-        const sendStatus = await service.sendMailer({
+        await service.sendMailer({
           to: email,
           subject: "Verification link",
           text: "This is the user verification link,  Please confirm it.",
@@ -545,6 +545,78 @@ const verify = async (req, res) => {
   }
 };
 
+const reSendVerifyEmail = async (req, res) => {
+  email = req.body.email;
+  try {
+    const value = await postDataSchema.validateAsync({
+      password: "xxx1",
+      email: email,
+    });
+    // } catch (e) {
+    //   res.setHeader("Connection", "close");
+    //   res.json({
+    //     status: "Bad Request",
+    //     code: 400,
+    //     ResponseBody: {
+    //       message: "Error Joi validation. Bad email",
+    //     },
+    //   });
+    //   res.end();
+    //   console.error(e);
+    // }
+    if (value.email) {
+      user = await service.getUserByEmail(value.email);
+
+      if (user) {
+        if (!user.verify) {
+          try {
+            await service.sendMailer({
+              to: value.email,
+              subject: "Verification link",
+              text: "This is the user verification link,  Please confirm it.",
+              html:
+                `<strong>This is the user verification link,  Please confirm it.</strong><br><a href="http://localhost:3000/users/verify/${user.verificationToken}">/users/verify/${user.verificationToken}</a>`,
+            });
+
+            res.setHeader("Connection", "close");
+            res.json({
+              status: "OK",
+              code: 200,
+              ResponseBody: {
+                message: "Verification email sent",
+              },
+            });
+            res.end();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    } else {
+      res.setHeader("Connection", "close");
+      res.json({
+        status: "Bad Request",
+        code: 400,
+        ResponseBody: {
+          message: "Error Bad email",
+        },
+      });
+      res.end();
+    }
+  } catch (e) {
+    res.setHeader("Connection", "close");
+    res.json({
+      status: "Bad Request",
+      code: 400,
+      ResponseBody: {
+        message: "Error Joi validation. Bad email",
+      },
+    });
+    res.end();
+    console.error(e);
+  }
+};
+
 module.exports = {
   get,
   getById,
@@ -558,4 +630,5 @@ module.exports = {
   current,
   avatars,
   verify,
+  reSendVerifyEmail,
 };

@@ -42,8 +42,14 @@ router.patch(
 
 router.get(
   "/verify/:verificationToken",
-  // ctrlUser.jwtAuth,
   ctrlUser.verify,
+);
+
+// @ POST /users/verify/
+
+router.post(
+  "/verify/",
+  ctrlUser.reSendVerifyEmail,
 );
 
 
