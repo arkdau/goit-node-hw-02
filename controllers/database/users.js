@@ -318,7 +318,7 @@ const login = async (req, res, next) => {
         code: 401,
         message: "User does not exist",
       });
-    } else if (user.verify === false) {
+    } else if (!user.verify) {
       res.send({
         status: "failure",
         code: 401,
