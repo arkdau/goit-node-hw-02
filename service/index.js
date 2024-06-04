@@ -1,6 +1,7 @@
 const Contacts = require("./schemas/contacts");
 const Users = require("./schemas/users");
 const gravatar = require("gravatar");
+const { sendMailSendGrid } = require("./email/mail");
 
 const getAllcontacts = async () => {
   return Contacts.find();
@@ -36,8 +37,22 @@ const getUserByEmail = (email) => {
   return Users.findOne({ email: email });
 };
 
+const getUserByVerifyToken = (verificationToken) => {
+  return Users.findOne(verificationToken);
+  // return await Users.findByIdAndUpdate({ _id: id }, fields, { new: true });
+};
+
 const createUser = async (
-  { password, email, subscription, token, owner, avatarURL },
+  {
+    password,
+    email,
+    subscription,
+    token,
+    owner,
+    avatarURL,
+    verify,
+    verificationToken,
+  },
 ) => {
   const newUser = new Users({
     password,
@@ -46,6 +61,8 @@ const createUser = async (
     token,
     owner,
     avatarURL,
+    verify,
+    verificationToken,
   });
   const url = gravatar.url(email, {
     s: "100",
@@ -54,6 +71,7 @@ const createUser = async (
   }, false);
   newUser.setPassword(password);
   newUser.setAvatar(url);
+  newUser.setToken();
   await newUser.save();
   return newUser;
 };
@@ -66,6 +84,18 @@ const removeUser = (id) => {
   return Users.deleteOne({ _id: id });
 };
 
+const sendMailer = async ({ to, subject, text, html }) => {
+  const from = "akson_control@o2.pl";
+
+  sendMailSendGrid({ to, from, subject, text, html })
+    .then(() => {
+      console.log("The mail has been sent");
+    })
+    .catch((err) => {
+      console.log(`The mail cannot be sent: ${err.message}`);
+    });
+};
+
 module.exports = {
   getAllcontacts,
   getContactById,
@@ -76,4 +106,6 @@ module.exports = {
   getUserById,
   getUserByEmail,
   updateUser,
+  sendMailer,
+  getUserByVerifyToken,
 };

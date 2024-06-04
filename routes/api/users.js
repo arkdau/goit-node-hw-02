@@ -35,9 +35,23 @@ const upload = multer({
 router.patch(
   "/avatars",
   ctrlUser.jwtAuth,
-  // upload.single("RequestBody"),
   upload.single("avatar"), // lepiej to brzmi
   ctrlUser.avatars,
 );
+
+router.get(
+  "/verify/:verificationToken",
+  ctrlUser.verify,
+);
+
+
+router.post(
+  "/verify/",
+  ctrlUser.reSendVerifyEmail,
+);
+
+
+
+
 
 module.exports = router;
